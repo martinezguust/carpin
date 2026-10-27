@@ -1,0 +1,12 @@
+# =====================================================
+# Carpintería Carpin – .htaccess de public/uploads/
+# Los archivos subidos nunca se ejecutan como PHP (RNF-04).
+# =====================================================
+
+# ===== Sin listado de carpetas =====
+Options -Indexes
+
+# ===== Bloquear cualquier script de PHP =====
+<FilesMatch "\.(php|php[0-9]|phtml|phar)$">
+    Require all denied
+</FilesMatch>

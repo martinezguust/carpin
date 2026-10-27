@@ -1,0 +1,209 @@
+@startuml clases
+skinparam classAttributeIconSize 0
+hide empty methods
+enum Rol {
+  ADMINISTRADOR
+  CARPINTERO
+  LIJADOR
+  PINTOR
+  CONTADOR
+  CLIENTE
+}
+enum FormaPago {
+  HORA
+  DIA
+  PROYECTO
+}
+enum StatusPago {
+  PENDIENTE
+  CON_ANTICIPO
+  PAGADO
+}
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+}
+class Usuario {
+  -idUsuario: int
+  -username: string
+  -passwordHash: string
+  -rol: Rol
+  -activo: bool
+  +verificarPassword(p: string): bool
+  +cambiarPassword(actual, nueva): void
+}
+class Trabajador {
+  -nombreCompleto: string
+  -telefono: string
+  -formaPago: FormaPago
+  -tarifaHora: decimal
+  -salarioDia: decimal
+  +calcularPago(inicio: Date, fin: Date): decimal
+}
+class Cliente {
+  -nombreCompleto: string
+  -telefono: string
+  -correo: string
+}
+class Proyecto {
+  -folio: string
+  -tipoMueble: string
+  -medidas: string
+  -madera: string
+  -acabado: string
+  -color: string
+  -granuladoLija: string
+  -fichaColor: string
+  -fechaEntrega: Date
+  -fechaLimitePago: Date
+  -precio: decimal
+  -porcentajeAvance: decimal
+  -statusPago: StatusPago
+  +avanzarFase(u: Usuario): void
+  +corregirFase(f: Fase, motivo: string): void
+  +saldo(): decimal
+  +estaVencido(): bool
+}
+class Fase {
+  -nombre: string
+  -orden: int
+  -porcentaje: decimal
+  -rolResponsable: Rol
+  +siguiente(): Fase
+}
+class Actividad {
+  -tipo: string
+  -fechaCompromiso: Date
+  -estado: string
+  +terminar(): void
+}
+class HistorialFase {
+  -fecha: DateTime
+  -motivo: string
+}
+class CapaPintura {
+  -numero: int
+  -producto: string
+}
+class Secado {
+  -inicio: DateTime
+  -horas: decimal
+  +finEstimado(): DateTime
+}
+class Reparacion {
+  -folio: string
+  -tamano: string
+  -tipoReparacion: string
+  -costo: decimal
+  -estado: string
+  +cambiarEstado(e: string): void
+  +saldo(): decimal
+}
+class ImagenReparacion {
+  -ruta: string
+}
+class Material {
+  -nombre: string
+  -categoria: string
+  -unidad: string
+  -existencia: decimal
+  -minimo: decimal
+  -costoUnitario: decimal
+  +registrarEntrada(c: decimal): void
+  +registrarSalida(c: decimal): void
+  +estaBajo(): bool
+}
+class MovimientoInventario {
+  -tipo: string
+  -cantidad: decimal
+}
+class ReporteDanio {
+  -elemento: string
+  -accion: string
+  -estado: string
+}
+class Asistencia {
+  -fecha: Date
+  -horaEntrada: Time
+  -horaSalida: Time
+  +horas(): decimal
+}
+class Nomina {
+  -periodoInicio: Date
+  -periodoFin: Date
+  -total: decimal
+  +calcular(): void
+}
+class PagoCliente {
+  -monto: decimal
+  -metodo: MetodoPago
+  -fecha: Date
+}
+class ComprobanteCliente {
+  -folio: string
+  +generarPDF(): string
+}
+class Proveedor {
+  -nombre: string
+  -telefono: string
+}
+class ComprobanteProveedor {
+  -folio: string
+  -monto: decimal
+  -fechaVencimiento: Date
+  -pagado: bool
+  -comprobante: string
+}
+class Presupuesto {
+  -costoMateriales: decimal
+  -pctManoObra: decimal
+  -pctGanancia: decimal
+  -total: decimal
+  +calcular(): void
+}
+class ProductoCatalogo {
+  -nombre: string
+  -precioDesde: decimal
+  -imagen: string
+}
+class SolicitudCotizacion {
+  -nombre: string
+  -telefono: string
+  -estado: string
+}
+class Notificacion {
+  -mensaje: string
+  -leida: bool
+}
+class Configuracion {
+  -nombreNegocio: string
+  -whatsapp: string
+  -logo: string
+}
+
+Usuario "1" -- "0..1" Trabajador
+Usuario "1" -- "0..1" Cliente
+Usuario "1" -- "*" Notificacion
+Cliente "1" -- "*" Proyecto
+Cliente "1" -- "*" Reparacion
+Proyecto "*" --> "1" Fase : faseActual
+Proyecto "1" *-- "*" Actividad
+Actividad "*" --> "1" Trabajador
+Proyecto "1" *-- "*" HistorialFase
+Proyecto "1" *-- "*" CapaPintura
+Proyecto "1" *-- "*" Secado
+Reparacion "1" *-- "0..6" ImagenReparacion
+Proyecto "1" -- "*" PagoCliente
+Reparacion "1" -- "*" PagoCliente
+Proyecto "1" -- "*" ComprobanteCliente
+Material "1" -- "*" MovimientoInventario
+MovimientoInventario "*" --> "0..1" Proyecto
+Trabajador "1" -- "*" Asistencia
+Nomina "1" o-- "*" Trabajador
+Proveedor "1" -- "*" ComprobanteProveedor
+Presupuesto "*" --> "*" Material
+Presupuesto "0..1" <-- "0..1" Proyecto
+SolicitudCotizacion "*" --> "0..1" ProductoCatalogo
+Presupuesto "*" --> "0..1" SolicitudCotizacion
+@enduml

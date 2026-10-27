@@ -1,0 +1,52 @@
+@startuml objetos
+object "cli : Cliente" as cli {
+  nombreCompleto = "María López"
+  telefono = "2281234567"
+}
+object "uCli : Usuario" as ucli {
+  username = "maria.lopez"
+  rol = CLIENTE
+}
+object "pry : Proyecto" as pry {
+  folio = "PRY-2026-0001"
+  tipoMueble = "Ropero"
+  madera = "Cedro"
+  color = "Nogal"
+  precio = 12500.00
+  porcentajeAvance = 66.67
+  statusPago = CON_ANTICIPO
+}
+object "f6 : Fase" as f6 {
+  nombre = "Listo para pintura"
+  orden = 6
+}
+object "lij : Trabajador" as lij {
+  nombreCompleto = "Juan Pérez"
+  formaPago = PROYECTO
+}
+object "pin : Trabajador" as pin {
+  nombreCompleto = "Ana Ruiz"
+  formaPago = HORA
+  tarifaHora = 60.00
+}
+object "a1 : Actividad" as a1 {
+  tipo = "LIJADO"
+  estado = "TERMINADA"
+}
+object "a2 : Actividad" as a2 {
+  tipo = "PINTURA"
+  estado = "PENDIENTE"
+}
+object "p1 : PagoCliente" as p1 {
+  monto = 5000.00
+  metodo = EFECTIVO
+}
+ucli -- cli
+cli -- pry
+pry --> f6
+pry -- a1
+pry -- a2
+a1 --> lij
+a2 --> pin
+pry -- p1
+@enduml

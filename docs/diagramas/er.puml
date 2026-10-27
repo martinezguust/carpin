@@ -1,0 +1,416 @@
+@startuml er
+hide circle
+skinparam linetype ortho
+entity "rol" as rol {
+  * id_rol : TINYINT UNSIGNED <<PK>>
+  --
+  * nombre : VARCHAR(30)
+}
+entity "usuario" as usuario {
+  * id_usuario : INT UNSIGNED <<PK>>
+  --
+  * username : VARCHAR(30)
+  * password_hash : VARCHAR(255)
+  * id_rol : TINYINT UNSIGNED <<FK>>
+  * activo : TINYINT(1)
+  * intentos_fallidos : TINYINT UNSIGNED
+    bloqueado_hasta : DATETIME
+    ultimo_acceso : DATETIME
+  * creado_en : DATETIME
+}
+entity "trabajador" as trabajador {
+  * id_trabajador : INT UNSIGNED <<PK>>
+  --
+  * id_usuario : INT UNSIGNED <<FK>>
+  * nombre_completo : VARCHAR(120)
+    telefono : VARCHAR(15)
+    forma_pago : ENUM
+    tarifa_hora : DECIMAL(10,2)
+    salario_dia : DECIMAL(10,2)
+  * activo : TINYINT(1)
+}
+entity "cliente" as cliente {
+  * id_cliente : INT UNSIGNED <<PK>>
+  --
+  * id_usuario : INT UNSIGNED <<FK>>
+  * nombre_completo : VARCHAR(120)
+  * telefono : VARCHAR(15)
+    correo : VARCHAR(120)
+    direccion : VARCHAR(255)
+  * creado_en : DATETIME
+}
+entity "configuracion" as configuracion {
+  * id_config : TINYINT UNSIGNED <<PK>>
+  --
+  * nombre_negocio : VARCHAR(100)
+    descripcion : TEXT
+    direccion : VARCHAR(255)
+    horario : VARCHAR(150)
+    telefono : VARCHAR(15)
+    whatsapp : VARCHAR(15)
+    mensaje_whatsapp : VARCHAR(255)
+    mapa_url : TEXT
+    logo_ruta : VARCHAR(255)
+  * pct_mano_obra : DECIMAL(5,2)
+  * pct_ganancia : DECIMAL(5,2)
+    actualizado_en : DATETIME
+}
+entity "porcentaje_rol" as porcentaje_rol {
+  * id_rol : TINYINT UNSIGNED <<PK>>
+  --
+  * porcentaje : DECIMAL(5,2)
+}
+entity "categoria_catalogo" as categoria_catalogo {
+  * id_categoria : INT UNSIGNED <<PK>>
+  --
+  * nombre : VARCHAR(60)
+}
+entity "producto_catalogo" as producto_catalogo {
+  * id_producto : INT UNSIGNED <<PK>>
+  --
+  * id_categoria : INT UNSIGNED <<FK>>
+  * nombre : VARCHAR(100)
+    descripcion : TEXT
+    precio_desde : DECIMAL(10,2)
+    imagen_ruta : VARCHAR(255)
+  * destacado : TINYINT(1)
+  * activo : TINYINT(1)
+  * creado_en : DATETIME
+}
+entity "solicitud_cotizacion" as solicitud_cotizacion {
+  * id_solicitud : INT UNSIGNED <<PK>>
+  --
+  * nombre : VARCHAR(120)
+  * telefono : VARCHAR(15)
+    correo : VARCHAR(120)
+    id_producto : INT UNSIGNED <<FK>>
+    medidas : VARCHAR(100)
+  * descripcion : TEXT
+  * estado : ENUM
+  * creado_en : DATETIME
+}
+entity "material" as material {
+  * id_material : INT UNSIGNED <<PK>>
+  --
+  * nombre : VARCHAR(100)
+  * categoria : ENUM
+  * unidad : ENUM
+  * existencia : DECIMAL(10,2)
+  * minimo : DECIMAL(10,2)
+  * costo_unitario : DECIMAL(10,2)
+  * activo : TINYINT(1)
+}
+entity "presupuesto" as presupuesto {
+  * id_presupuesto : INT UNSIGNED <<PK>>
+  --
+  * folio : VARCHAR(15)
+    id_solicitud : INT UNSIGNED <<FK>>
+    id_cliente : INT UNSIGNED <<FK>>
+    nombre_cliente : VARCHAR(120)
+  * descripcion : TEXT
+  * costo_materiales : DECIMAL(10,2)
+  * pct_mano_obra : DECIMAL(5,2)
+  * mano_obra : DECIMAL(10,2)
+  * pct_ganancia : DECIMAL(5,2)
+  * ganancia : DECIMAL(10,2)
+  * total : DECIMAL(10,2)
+  * id_usuario : INT UNSIGNED <<FK>>
+  * creado_en : DATETIME
+}
+entity "presupuesto_detalle" as presupuesto_detalle {
+  * id_detalle : INT UNSIGNED <<PK>>
+  --
+  * id_presupuesto : INT UNSIGNED <<FK>>
+  * id_material : INT UNSIGNED <<FK>>
+  * cantidad : DECIMAL(10,2)
+  * costo_unitario : DECIMAL(10,2)
+  * subtotal : DECIMAL(10,2)
+}
+entity "fase" as fase {
+  * id_fase : TINYINT UNSIGNED <<PK>>
+  --
+  * nombre : VARCHAR(40)
+  * orden : TINYINT UNSIGNED
+  * id_rol_responsable : TINYINT UNSIGNED <<FK>>
+  * porcentaje : DECIMAL(5,2)
+}
+entity "proyecto" as proyecto {
+  * id_proyecto : INT UNSIGNED <<PK>>
+  --
+  * folio : VARCHAR(15)
+  * id_cliente : INT UNSIGNED <<FK>>
+    id_solicitud : INT UNSIGNED <<FK>>
+    id_presupuesto : INT UNSIGNED <<FK>>
+  * tipo_mueble : VARCHAR(60)
+    descripcion : TEXT
+    alto_cm : DECIMAL(6,1)
+    ancho_cm : DECIMAL(6,1)
+    fondo_cm : DECIMAL(6,1)
+  * madera : VARCHAR(60)
+    acabado : VARCHAR(60)
+    color : VARCHAR(60)
+    granulado_lija : VARCHAR(40)
+    ficha_color : TEXT
+  * fecha_registro : DATE
+  * fecha_entrega : DATE
+  * fecha_limite_pago : DATE
+  * precio : DECIMAL(10,2)
+    mano_obra : DECIMAL(10,2)
+  * id_fase : TINYINT UNSIGNED <<FK>>
+  * porcentaje_avance : DECIMAL(5,2)
+  * status_pago : ENUM
+    entregado_en : DATETIME
+  * id_usuario_registro : INT UNSIGNED <<FK>>
+  * activo : TINYINT(1)
+  * creado_en : DATETIME
+}
+entity "actividad" as actividad {
+  * id_actividad : INT UNSIGNED <<PK>>
+  --
+  * id_proyecto : INT UNSIGNED <<FK>>
+  * id_trabajador : INT UNSIGNED <<FK>>
+  * tipo : ENUM
+    fecha_compromiso : DATE
+  * estado : ENUM
+  * asignada_en : DATETIME
+    terminada_en : DATETIME
+}
+entity "historial_fase" as historial_fase {
+  * id_historial : INT UNSIGNED <<PK>>
+  --
+  * id_proyecto : INT UNSIGNED <<FK>>
+    id_fase_anterior : TINYINT UNSIGNED <<FK>>
+  * id_fase_nueva : TINYINT UNSIGNED <<FK>>
+  * id_usuario : INT UNSIGNED <<FK>>
+    motivo : VARCHAR(255)
+  * fecha : DATETIME
+}
+entity "capa_pintura" as capa_pintura {
+  * id_capa : INT UNSIGNED <<PK>>
+  --
+  * id_proyecto : INT UNSIGNED <<FK>>
+  * numero_capa : TINYINT UNSIGNED
+  * producto : VARCHAR(80)
+    observaciones : VARCHAR(255)
+  * id_trabajador : INT UNSIGNED <<FK>>
+  * fecha : DATETIME
+}
+entity "secado" as secado {
+  * id_secado : INT UNSIGNED <<PK>>
+  --
+  * id_proyecto : INT UNSIGNED <<FK>>
+  * inicio : DATETIME
+  * horas : DECIMAL(5,2)
+  * fin_estimado : DATETIME
+  * notificado : TINYINT(1)
+}
+entity "reparacion" as reparacion {
+  * id_reparacion : INT UNSIGNED <<PK>>
+  --
+  * folio : VARCHAR(15)
+  * id_cliente : INT UNSIGNED <<FK>>
+  * descripcion_mueble : VARCHAR(150)
+  * tamano : ENUM
+  * tipo_reparacion : VARCHAR(80)
+    descripcion_danio : TEXT
+  * costo : DECIMAL(10,2)
+  * estado : ENUM
+  * porcentaje_avance : DECIMAL(5,2)
+  * fecha_recepcion : DATE
+  * fecha_estimada : DATE
+  * fecha_limite_pago : DATE
+  * status_pago : ENUM
+    entregada_en : DATETIME
+  * id_usuario_registro : INT UNSIGNED <<FK>>
+  * activo : TINYINT(1)
+  * creado_en : DATETIME
+}
+entity "imagen_reparacion" as imagen_reparacion {
+  * id_imagen : INT UNSIGNED <<PK>>
+  --
+  * id_reparacion : INT UNSIGNED <<FK>>
+  * ruta : VARCHAR(255)
+  * tipo : ENUM
+  * subida_en : DATETIME
+}
+entity "movimiento_inventario" as movimiento_inventario {
+  * id_movimiento : INT UNSIGNED <<PK>>
+  --
+  * id_material : INT UNSIGNED <<FK>>
+  * tipo : ENUM
+  * cantidad : DECIMAL(10,2)
+  * costo_unitario : DECIMAL(10,2)
+    id_proyecto : INT UNSIGNED <<FK>>
+    id_reparacion : INT UNSIGNED <<FK>>
+  * id_usuario : INT UNSIGNED <<FK>>
+    nota : VARCHAR(255)
+  * fecha : DATETIME
+}
+entity "reporte_danio" as reporte_danio {
+  * id_reporte : INT UNSIGNED <<PK>>
+  --
+  * elemento : VARCHAR(100)
+  * tipo : ENUM
+  * descripcion : TEXT
+  * accion : ENUM
+    foto_ruta : VARCHAR(255)
+  * estado : ENUM
+  * id_usuario_reporta : INT UNSIGNED <<FK>>
+  * fecha : DATETIME
+    resuelto_en : DATETIME
+}
+entity "asistencia" as asistencia {
+  * id_asistencia : INT UNSIGNED <<PK>>
+  --
+  * id_trabajador : INT UNSIGNED <<FK>>
+  * fecha : DATE
+  * hora_entrada : TIME
+  * hora_salida : TIME
+  * horas : DECIMAL(5,2)
+  * id_usuario_captura : INT UNSIGNED <<FK>>
+}
+entity "nomina" as nomina {
+  * id_nomina : INT UNSIGNED <<PK>>
+  --
+  * periodo_inicio : DATE
+  * periodo_fin : DATE
+  * total : DECIMAL(12,2)
+  * estado : ENUM
+    metodo : ENUM
+    pagada_en : DATETIME
+  * id_usuario : INT UNSIGNED <<FK>>
+  * creado_en : DATETIME
+}
+entity "nomina_detalle" as nomina_detalle {
+  * id_detalle : INT UNSIGNED <<PK>>
+  --
+  * id_nomina : INT UNSIGNED <<FK>>
+  * id_trabajador : INT UNSIGNED <<FK>>
+  * forma_pago : ENUM
+  * horas : DECIMAL(7,2)
+  * dias : SMALLINT UNSIGNED
+  * monto_tiempo : DECIMAL(10,2)
+  * monto_proyectos : DECIMAL(10,2)
+  * total : DECIMAL(10,2)
+}
+entity "pago_proyecto_trabajador" as pago_proyecto_trabajador {
+  * id_pago_pt : INT UNSIGNED <<PK>>
+  --
+  * id_proyecto : INT UNSIGNED <<FK>>
+  * id_trabajador : INT UNSIGNED <<FK>>
+  * id_rol : TINYINT UNSIGNED <<FK>>
+  * porcentaje_rol : DECIMAL(5,2)
+  * monto : DECIMAL(10,2)
+    id_nomina : INT UNSIGNED <<FK>>
+  * generado_en : DATETIME
+}
+entity "pago_cliente" as pago_cliente {
+  * id_pago : INT UNSIGNED <<PK>>
+  --
+    id_proyecto : INT UNSIGNED <<FK>>
+    id_reparacion : INT UNSIGNED <<FK>>
+  * monto : DECIMAL(10,2)
+  * metodo : ENUM
+  * fecha : DATE
+    referencia : VARCHAR(60)
+  * id_usuario : INT UNSIGNED <<FK>>
+  * creado_en : DATETIME
+}
+entity "comprobante_cliente" as comprobante_cliente {
+  * id_comprobante : INT UNSIGNED <<PK>>
+  --
+  * folio : VARCHAR(15)
+    id_proyecto : INT UNSIGNED <<FK>>
+    id_reparacion : INT UNSIGNED <<FK>>
+  * ruta_pdf : VARCHAR(255)
+  * id_usuario : INT UNSIGNED <<FK>>
+  * generada_en : DATETIME
+}
+entity "proveedor" as proveedor {
+  * id_proveedor : INT UNSIGNED <<PK>>
+  --
+  * nombre : VARCHAR(120)
+    contacto : VARCHAR(120)
+    telefono : VARCHAR(15)
+    correo : VARCHAR(120)
+    productos : TEXT
+  * activo : TINYINT(1)
+}
+entity "comprobante_proveedor" as comprobante_proveedor {
+  * id_comprobante_prov : INT UNSIGNED <<PK>>
+  --
+  * id_proveedor : INT UNSIGNED <<FK>>
+  * folio : VARCHAR(40)
+  * fecha : DATE
+  * fecha_vencimiento : DATE
+  * monto : DECIMAL(12,2)
+    concepto : VARCHAR(255)
+  * pagado : TINYINT(1)
+    pagado_en : DATE
+  * archivo_ruta : VARCHAR(255)
+  * id_usuario : INT UNSIGNED <<FK>>
+  * creado_en : DATETIME
+}
+entity "notificacion" as notificacion {
+  * id_notificacion : INT UNSIGNED <<PK>>
+  --
+  * id_usuario : INT UNSIGNED <<FK>>
+  * tipo : VARCHAR(40)
+  * mensaje : VARCHAR(255)
+    enlace : VARCHAR(255)
+    clave_unica : VARCHAR(100)
+  * leida : TINYINT(1)
+  * creado_en : DATETIME
+}
+categoria_catalogo ||--o{ producto_catalogo
+cliente |o--o{ presupuesto
+cliente ||--o{ proyecto
+cliente ||--o{ reparacion
+fase |o--o{ historial_fase
+fase ||--o{ historial_fase
+fase ||--o{ proyecto
+material ||--o{ movimiento_inventario
+material ||--o{ presupuesto_detalle
+nomina |o--o{ pago_proyecto_trabajador
+nomina ||--o{ nomina_detalle
+presupuesto |o--o{ proyecto
+presupuesto ||--o{ presupuesto_detalle
+producto_catalogo |o--o{ solicitud_cotizacion
+proveedor ||--o{ comprobante_proveedor
+proyecto |o--o{ comprobante_cliente
+proyecto |o--o{ movimiento_inventario
+proyecto |o--o{ pago_cliente
+proyecto ||--o{ actividad
+proyecto ||--o{ capa_pintura
+proyecto ||--o{ historial_fase
+proyecto ||--o{ pago_proyecto_trabajador
+proyecto ||--o{ secado
+reparacion |o--o{ comprobante_cliente
+reparacion |o--o{ movimiento_inventario
+reparacion |o--o{ pago_cliente
+reparacion ||--o{ imagen_reparacion
+rol ||--o{ fase
+rol ||--o{ pago_proyecto_trabajador
+rol ||--o{ usuario
+solicitud_cotizacion |o--o{ presupuesto
+solicitud_cotizacion |o--o{ proyecto
+trabajador ||--o{ actividad
+trabajador ||--o{ asistencia
+trabajador ||--o{ capa_pintura
+trabajador ||--o{ nomina_detalle
+trabajador ||--o{ pago_proyecto_trabajador
+usuario ||--o{ asistencia
+usuario ||--o{ comprobante_cliente
+usuario ||--o{ comprobante_proveedor
+usuario ||--o{ historial_fase
+usuario ||--o{ movimiento_inventario
+usuario ||--o{ nomina
+usuario ||--o{ notificacion
+usuario ||--o{ pago_cliente
+usuario ||--o{ presupuesto
+usuario ||--o{ proyecto
+usuario ||--o{ reparacion
+usuario ||--o{ reporte_danio
+usuario ||--o| cliente
+usuario ||--o| trabajador
+@enduml

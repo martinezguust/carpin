@@ -1,0 +1,32 @@
+@startuml componentes
+node "Navegador" {
+  [HTML / CSS Bootstrap] as H
+  [JavaScript] as J
+  [Chart.js] as C
+}
+node "Servidor Apache 2.4.65 + PHP 8.3" {
+  [Front Controller\nindex.php] as FC
+  [Router] as R
+  [Controladores] as CT
+  [Servicios de negocio] as SV
+  [Modelos PDO] as MD
+  [Generador PDF (Dompdf)] as PDF
+  [Gestor de archivos] as UP
+}
+database "MySQL\ncarpin_db" as DB
+folder "uploads/" as FS
+cloud "Google Maps / WhatsApp" as EXT
+H --> FC : HTTP(S)
+J --> FC : fetch JSON\n(notificaciones)
+C ..> J
+FC --> R
+R --> CT
+CT --> SV
+CT --> MD
+SV --> MD
+SV --> PDF
+CT --> UP
+MD --> DB : PDO
+UP --> FS
+H ..> EXT : iframe / enlace wa.me
+@enduml

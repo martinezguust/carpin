@@ -1,0 +1,15 @@
+# =====================================================
+# Carpintería Carpin – .htaccess de la raíz del proyecto
+# Solo la carpeta public/ es accesible desde el navegador.
+# - /carpin/ redirige a /carpin/public/
+# - Cualquier otra ruta fuera de public/ responde 403.
+# =====================================================
+
+RewriteEngine On
+
+# ===== Redirigir la raíz del proyecto a public/ =====
+# (REQUEST_URI ya trae la carpeta del proyecto, ej. "/carpin/")
+RewriteRule ^$ %{REQUEST_URI}public/ [R=302,L]
+
+# ===== Bloquear todo lo que no esté dentro de public/ =====
+RewriteRule !^public(/|$) - [F,L]

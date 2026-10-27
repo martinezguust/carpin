@@ -1,0 +1,15 @@
+# =====================================================
+# Carpintería Carpin – .htaccess de public/
+# Envía al front controller (index.php) toda petición que
+# no corresponda a un archivo o carpeta real.
+# =====================================================
+
+# ===== Sin listado de carpetas =====
+Options -Indexes
+
+# ===== Reescritura hacia el front controller =====
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

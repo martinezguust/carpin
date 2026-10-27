@@ -1,0 +1,75 @@
+@startuml paquetes
+package "public" {
+  [index.php (front controller)]
+  package "assets" {
+    [css]
+    [js]
+    [img]
+    [vendor]
+  }
+  package "uploads" {
+    [catalogo]
+    [reparaciones]
+    [archivos_prov]
+    [logo]
+    [comprobantes]
+  }
+}
+package "app" {
+  package "core" {
+    [Router]
+    [Controller]
+    [Model]
+    [Database]
+    [Auth]
+    [Csrf]
+    [View]
+    [Upload]
+  }
+  package "controllers" {
+    [AuthController]
+    [PublicoController]
+    [UsuarioController]
+    [ProyectoController]
+    [ReparacionController]
+    [InventarioController]
+    [AsistenciaController]
+    [NominaController]
+    [FinanzasController]
+    [PresupuestoController]
+    [ReporteController]
+    [NotificacionController]
+  }
+  package "models" {
+    [Modelos PDO]
+  }
+  package "services" {
+    [FaseService]
+    [NominaService]
+    [PresupuestoService]
+    [NotificacionService]
+    [PdfService]
+  }
+  package "views" {
+    [Plantillas PHP]
+  }
+}
+package "config" {
+  [config.php]
+}
+package "database" {
+  [schema.sql]
+  [seed.sql]
+}
+package "vendor (Composer)" {
+    [dompdf]
+  }
+"public" ..> "app"
+"controllers" ..> "core"
+"controllers" ..> "models"
+"controllers" ..> "services"
+"services" ..> "models"
+"models" ..> "core"
+"services" ..> "vendor (Composer)"
+"app" ..> "config"
+@enduml

@@ -1,0 +1,7 @@
+# =====================================================
+# Carpintería Carpin – archivos de comprobantes de proveedores
+# No se sirven por enlace directo: los entrega un controlador
+# que valida el rol (SRS 5.4).
+# =====================================================
+
+Require all denied

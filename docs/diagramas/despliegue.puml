@@ -1,0 +1,19 @@
+@startuml despliegue
+node "PC de la carpintería\n(Windows 10/11)" as srv {
+  node "XAMPP 8.3.36" {
+    node "Apache 2.4" {
+      artifact "carpin/ (PHP 8.3 MVC)"
+    }
+    database "MariaDB 10.11\ncarpin_db"
+  }
+  folder "carpin/public/uploads"
+}
+node "Celular del trabajador\n(Android / iOS)" as cel
+node "PC del Contador / Administrador" as pc
+node "Dispositivo del cliente" as cli
+cloud "Internet" as net
+cel --> srv : Wi-Fi local\nHTTP :80
+pc --> srv : LAN\nHTTP :80
+cli --> net
+net --> srv : HTTPS (si se publica en hosting)
+@enduml

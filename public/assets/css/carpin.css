@@ -1,0 +1,169 @@
+/*
+ * =====================================================
+ * Carpintería Carpin – public/assets/css/carpin.css
+ * Hoja de estilos propia del sistema: fuentes locales,
+ * paleta de tonos madera (SRS 10.1) y estilos base.
+ * Se carga después de Bootstrap 5.3.
+ * =====================================================
+ */
+
+
+/* ===== Fuentes locales (SRS 10.1) ===== */
+
+/* Inter: texto general */
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../vendor/fuentes/inter-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("../vendor/fuentes/inter-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("../vendor/fuentes/inter-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../vendor/fuentes/inter-latin-700-normal.woff2") format("woff2");
+}
+
+/* Merriweather: títulos */
+@font-face {
+    font-family: "Merriweather";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../vendor/fuentes/merriweather-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Merriweather";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../vendor/fuentes/merriweather-latin-700-normal.woff2") format("woff2");
+}
+
+
+/* ===== Variables ===== */
+
+:root {
+    /* Paleta (SRS 10.1) */
+    --carpin-nogal: #5D3A1A;
+    --carpin-madera: #7B4A2A;
+    --carpin-olivo: #6B7F3A;
+    --carpin-beige: #EADBC8;
+    --carpin-crema: #F7F1E8;
+    --carpin-texto: #2B2B2B;
+    --carpin-exito: #4E8F3A;
+    --carpin-advertencia: #C98A1B;
+    --carpin-error: #B23A2E;
+    --carpin-pendiente: #D9CFC1;
+    --carpin-whatsapp: #25D366;
+
+    /* Tipografía */
+    --carpin-fuente-titulos: "Merriweather", Georgia, serif;
+    --carpin-fuente-texto: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --carpin-tamano-base: 16px;
+
+    /* Bootstrap: fuente y colores generales */
+    --bs-body-font-family: var(--carpin-fuente-texto);
+    --bs-body-font-size: 1rem;
+    --bs-body-color: var(--carpin-texto);
+    --bs-body-bg: var(--carpin-crema);
+    --bs-link-color: var(--carpin-olivo);
+    --bs-link-color-rgb: 107, 127, 58;
+    --bs-link-hover-color: var(--carpin-nogal);
+    --bs-link-hover-color-rgb: 93, 58, 26;
+}
+
+
+/* ===== Estilos base ===== */
+
+html {
+    font-size: var(--carpin-tamano-base);
+}
+
+body {
+    font-family: var(--carpin-fuente-texto);
+    color: var(--carpin-texto);
+    background-color: var(--carpin-crema);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--carpin-fuente-titulos);
+    font-weight: 700;
+    color: var(--carpin-nogal);
+}
+
+
+/* ===== Páginas de error (403, 404, 500) ===== */
+
+.pagina-error {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background-color: var(--carpin-nogal);
+}
+
+.pagina-error__tarjeta {
+    width: 100%;
+    max-width: 480px;
+    padding: 32px 24px;
+    text-align: center;
+    background-color: #FFFDF9;
+    border-radius: 16px;
+}
+
+.pagina-error__logo {
+    font-family: var(--carpin-fuente-titulos);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--carpin-nogal);
+}
+
+.pagina-error__codigo {
+    font-family: var(--carpin-fuente-titulos);
+    font-size: 3rem;
+    color: var(--carpin-madera);
+}
+
+.pagina-error__boton {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 24px;
+    color: #FFFFFF;
+    background-color: var(--carpin-nogal);
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.pagina-error__boton:hover,
+.pagina-error__boton:focus {
+    color: #FFFFFF;
+    background-color: var(--carpin-madera);
+}

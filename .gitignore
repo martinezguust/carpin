@@ -1,0 +1,21 @@
+# =====================================================
+# Carpintería Carpin – archivos que no se suben a Git
+# =====================================================
+
+# ===== Configuración local (contiene datos de conexión) =====
+/config/config.php
+
+# ===== Dependencias de Composer (se instalan con "composer install") =====
+/vendor/
+
+# ===== Archivos subidos por los usuarios =====
+# Se ignora el contenido, pero se conservan las carpetas (.gitkeep)
+# y sus reglas de seguridad (.htaccess).
+/public/uploads/**/*
+!/public/uploads/**/
+!/public/uploads/**/.gitkeep
+!/public/uploads/**/.htaccess
+!/public/uploads/.htaccess
+
+# ===== Copia del SRS en la raíz (la versión oficial está en docs/SRS.docx) =====
+/SRS_Carpinteria_Carpin_v2.docx

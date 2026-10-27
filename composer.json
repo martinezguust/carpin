@@ -1,0 +1,13 @@
+{
+    "name": "equipo6/carpin",
+    "description": "Sistema Web de Gestión para la Carpintería Carpin (Equipo 6, UV).",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.3",
+        "dompdf/dompdf": "^3.1"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

@@ -1,0 +1,38 @@
+@startuml actividades
+|Visitante|
+start
+:Solicita cotización;
+|Carpintero|
+:Revisa solicitud;
+|Contador|
+:Genera presupuesto (RN-14);
+|Carpintero|
+if (¿Cliente acepta?) then (sí)
+  :Registra proyecto y cuenta del cliente;
+  :Asigna actividades;
+else (no)
+  :Marca solicitud como descartada;
+  stop
+endif
+|Contador|
+:Registra anticipo;
+|Carpintero|
+:En armado → Listo sin armar → Ensamblado;
+|Lijador|
+:Lija según granulado;
+:Marca "Listo para pintura";
+|Pintor|
+:Aplica capas según ficha de color;
+:Marca "Pintado";
+:Programa secado;
+:Marca "Listo para entrega";
+|Cliente|
+:Ve mensaje "Su mueble está listo";
+|Contador|
+:Registra pago final y genera comprobante PDF;
+|Carpintero|
+:Marca "Entregado";
+|Sistema|
+:Genera pago por proyecto a lijador y pintor;
+stop
+@enduml

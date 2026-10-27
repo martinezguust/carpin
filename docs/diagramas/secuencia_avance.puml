@@ -1,0 +1,29 @@
+@startuml secuencia_avance
+autonumber
+actor Lijador
+participant "Navegador" as UI
+participant "ProyectoController" as PC
+participant "Auth" as AU
+participant "ProyectoModel" as PM
+participant "NotificacionService" as NS
+database "carpin_db" as DB
+Lijador -> UI : Pulsa "Marcar como terminada"
+UI -> PC : POST /proyectos/{id}/avanzar (csrf)
+PC -> AU : verificarRol(LIJADOR) y CSRF
+AU --> PC : ok
+PC -> PM : puedeAvanzar(idProyecto, idUsuario)
+PM -> DB : SELECT fase actual, actividad asignada
+DB --> PM : fase = Lijado, actividad = PENDIENTE
+alt es responsable de la fase
+  PM -> DB : BEGIN
+  PM -> DB : UPDATE proyecto SET id_fase = 6, porcentaje_avance = 66.67
+  PM -> DB : UPDATE actividad SET estado = TERMINADA
+  PM -> DB : INSERT historial_fase
+  PM -> DB : COMMIT
+  PC -> NS : notificarFase(proyecto, fase 6)
+  NS -> DB : INSERT notificacion (pintores asignados)
+  PC --> UI : 302 /mis-pendientes + mensaje "Proyecto enviado a pintura"
+else no es responsable
+  PC --> UI : 403 Acceso denegado
+end
+@enduml

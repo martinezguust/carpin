@@ -1,0 +1,98 @@
+@startuml casos_uso
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+actor "Visitante" as V
+actor "Cliente" as CL
+actor "Administrador" as AD
+actor "Carpintero" as CA
+actor "Lijador" as LI
+actor "Pintor" as PI
+actor "Contador" as CO
+actor "Usuario autenticado" as UA
+AD -|> UA
+CA -|> UA
+LI -|> UA
+PI -|> UA
+CO -|> UA
+CL -|> UA
+rectangle "Sistema Carpintería Carpin" {
+  usecase "Ver catálogo e información" as UC1
+  usecase "Contactar por WhatsApp" as UC2
+  usecase "Solicitar cotización" as UC3
+  usecase "Iniciar / cerrar sesión" as UC4
+  usecase "Ver notificaciones" as UC5
+  usecase "Gestionar usuarios" as UC6
+  usecase "Administrar catálogo y configuración" as UC7
+  usecase "Cambiar logo" as UC8
+  usecase "Registrar proyecto" as UC9
+  usecase "Crear cuenta de cliente" as UC10
+  usecase "Asignar actividades" as UC11
+  usecase "Corregir fase" as UC12
+  usecase "Registrar reparación" as UC13
+  usecase "Subir imágenes de reparación" as UC14
+  usecase "Atender cotizaciones" as UC15
+  usecase "Ver mis pendientes" as UC16
+  usecase "Marcar actividad terminada\n(avanzar fase)" as UC17
+  usecase "Consultar granulado de lija" as UC18
+  usecase "Consultar ficha de color" as UC19
+  usecase "Registrar capas" as UC20
+  usecase "Programar secado" as UC21
+  usecase "Gestionar inventario" as UC22
+  usecase "Reportar material/herramienta dañada" as UC23
+  usecase "Capturar asistencia" as UC24
+  usecase "Configurar formas de pago y %" as UC25
+  usecase "Calcular nómina" as UC26
+  usecase "Registrar pago de cliente" as UC27
+  usecase "Generar comprobante PDF" as UC28
+  usecase "Registrar comprobante de proveedor" as UC29
+  usecase "Generar presupuesto" as UC30
+  usecase "Generar reportes PDF" as UC31
+  usecase "Consultar avance de mi pedido" as UC32
+  usecase "Descargar mi comprobante" as UC33
+}
+V --> UC1
+V --> UC2
+V --> UC3
+UA --> UC4
+UA --> UC5
+AD --> UC6
+AD --> UC7
+AD --> UC8
+CA --> UC9
+CA --> UC11
+CA --> UC12
+CA --> UC13
+CA --> UC15
+CA --> UC17
+CA --> UC22
+CA --> UC25
+CA --> UC30
+CA --> UC31
+UC9 ..> UC10 : <<include>>
+UC13 ..> UC10 : <<include>>
+UC13 ..> UC14 : <<include>>
+LI --> UC16
+LI --> UC17
+LI --> UC18
+LI --> UC23
+PI --> UC16
+PI --> UC17
+PI --> UC19
+PI --> UC20
+PI --> UC21
+PI --> UC22
+PI --> UC23
+CO --> UC22
+CO --> UC24
+CO --> UC25
+CO --> UC26
+CO --> UC27
+CO --> UC28
+CO --> UC29
+CO --> UC30
+CO --> UC31
+CL --> UC32
+CL --> UC33
+UC27 <.. UC28 : <<extend>>
+@enduml

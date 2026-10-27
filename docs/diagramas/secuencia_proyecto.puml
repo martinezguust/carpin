@@ -1,0 +1,27 @@
+@startuml secuencia_proyecto
+autonumber
+actor Carpintero
+participant "Navegador" as UI
+participant "ProyectoController" as PC
+participant "UsuarioModel" as UM
+participant "ClienteModel" as CM
+participant "ProyectoModel" as PM
+participant "PagoModel" as PG
+database "carpin_db" as DB
+Carpintero -> UI : Llena formulario + usuario y contraseña del cliente
+UI -> PC : POST /proyectos/guardar
+PC -> UM : existeUsername(username)
+UM -> DB : SELECT 1 FROM usuario WHERE username = ?
+DB --> UM : 0 filas
+PC -> DB : BEGIN
+PC -> UM : crear(username, hash, CLIENTE)
+PC -> CM : crear(idUsuario, nombre, teléfono)
+PC -> PM : crear(datos, fase = 1, avance = 11.11)
+PM -> DB : INSERT proyecto (folio PRY-AAAA-NNNN)
+opt anticipo > 0
+  PC -> PG : registrar(anticipo)
+  PG -> DB : INSERT pago_cliente / UPDATE status_pago
+end
+PC -> DB : COMMIT
+PC --> UI : Muestra hoja de credenciales imprimible
+@enduml

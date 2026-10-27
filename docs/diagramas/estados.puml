@@ -1,0 +1,18 @@
+@startuml estados
+[*] --> Cotizado : registrar proyecto
+Cotizado --> EnArmado : Carpintero
+EnArmado --> ListoSinArmar : Carpintero
+ListoSinArmar --> Ensamblado : Carpintero
+Ensamblado --> Lijado : Lijador
+Lijado --> ListoParaPintura : Lijador
+ListoParaPintura --> Pintado : Pintor
+Pintado --> Secado : Pintor programa secado
+Secado --> ListoParaEntrega : Pintor
+ListoParaEntrega --> Entregado : Carpintero
+Entregado --> [*]
+state "En armado" as EnArmado
+state "Listo sin armar" as ListoSinArmar
+state "Listo para pintura" as ListoParaPintura
+state "Listo para entrega" as ListoParaEntrega : avance 100 %\nmensaje al cliente
+note right of Cotizado : El Carpintero puede corregir\na cualquier estado con motivo (RN-03)
+@enduml
