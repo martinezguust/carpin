@@ -3,8 +3,11 @@
  * =====================================================
  * Carpintería Carpin – app/views/carpintero/_datos_proyecto.php
  * Pestaña "Datos" del detalle del proyecto: cliente, fechas,
- * pago (solo consulta, respuesta 10) y datos del mueble.
- * Variables (de proyecto_detalle.php): $proyecto, $saldo.
+ * pago (solo consulta, respuesta 10), datos del mueble y
+ * "Producción" con las capas y los secados registrados por
+ * el Pintor (solo consulta, respuesta 7 de la Fase 2).
+ * Variables (de proyecto_detalle.php): $proyecto, $saldo,
+ * $capas, $secados.
  * =====================================================
  */
 
@@ -74,5 +77,43 @@ $textoMedidas = ($medidas === []) ? 'Sin medidas' : implode(' × ', $medidas) . 
             <dt>Ficha de color</dt>
             <dd><?= e($proyecto['ficha_color'] ?? '—') ?></dd>
         </dl>
+
+        <!-- ===== Producción (capas y secado) ===== -->
+        <h3 class="subtitulo-seccion">Producción</h3>
+
+        <?php if ($capas === [] && $secados === []): ?>
+            <p class="texto-ayuda">El Pintor todavía no registra capas ni secados.</p>
+        <?php endif; ?>
+
+        <?php if ($capas !== []): ?>
+            <p class="fw-semibold mb-1">Capas aplicadas: <?= e(count($capas)) ?></p>
+            <ul class="lista-produccion">
+                <?php foreach ($capas as $capa): ?>
+                    <li>
+                        Capa <?= e($capa['numero_capa']) ?> · <?= e($capa['producto']) ?>
+                        <span class="texto-ayuda d-block">
+                            <?= e(fechaHora($capa['fecha'])) ?> · <?= e($capa['pintor_nombre']) ?>
+                            <?php if ($capa['observaciones'] !== null): ?>
+                                · <?= e($capa['observaciones']) ?>
+                            <?php endif; ?>
+                        </span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+
+        <?php if ($secados !== []): ?>
+            <p class="fw-semibold mb-1">Secados programados</p>
+            <ul class="lista-produccion">
+                <?php foreach ($secados as $secado): ?>
+                    <li>
+                        <?= e(fechaHora($secado['inicio'])) ?> · <?= e($secado['horas']) ?> h
+                        <span class="texto-ayuda d-block">
+                            Termina: <?= e(fechaHora($secado['fin_estimado'])) ?>
+                        </span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
     </div>
 </div>

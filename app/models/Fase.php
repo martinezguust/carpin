@@ -13,6 +13,8 @@ class Fase extends Model {
     public const COTIZADO = 1;
     public const ENSAMBLADO = 4;
     public const LISTO_PARA_PINTURA = 6;
+    public const PINTADO = 7;
+    public const SECADO = 8;
     public const LISTO_PARA_ENTREGA = 9;
     public const ENTREGADO = 10;
 

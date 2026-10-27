@@ -72,22 +72,187 @@ final class FaseService {
 
     /**
      * Avanza el proyecto a la fase inmediata siguiente (avance normal).
+     * Reglas del secado (CU-05 A2 y respuestas 1 y 2 de la Fase 2):
+     *   - de "Pintado" a "Secado" se necesita un secado programado;
+     *   - de "Secado" a "Listo para entrega" antes de que termine el
+     *     tiempo de secado, se pide confirmar.
      *
      * Recibe: $proyecto, datos completos del proyecto;
      *         $usuario, datos de la sesión;
-     *         $confirmaSaldo, true si el usuario confirmó entregar con saldo.
+     *         $confirmaciones, arreglo con 'saldo' y 'secado' (true si el
+     *         usuario marcó la casilla de confirmación correspondiente).
      * Devuelve: datos de la fase nueva. Lanza DomainException si no se puede.
      */
-    public static function avanzar(array $proyecto, array $usuario, bool $confirmaSaldo): array {
+    public static function avanzar(array $proyecto, array $usuario, array $confirmaciones): array {
         $siguiente = self::siguienteFasePermitida($proyecto, $usuario);
 
         if ($siguiente === null) {
             throw new DomainException('No te corresponde avanzar este proyecto en su fase actual.');
         }
 
-        self::cambiarFase($proyecto, $siguiente, $usuario, null, $confirmaSaldo, false);
+        $idProyecto = (int) $proyecto['id_proyecto'];
+        $idSiguiente = (int) $siguiente['id_fase'];
+        $secado = self::secadoVigente($idProyecto);
+
+        if ($idSiguiente === Fase::SECADO && $secado === null) {
+            throw new DomainException('Programa el tiempo de secado antes de avanzar a "Secado".');
+        }
+
+        $secadoSinTerminar = $secado !== null && strtotime($secado['fin_estimado']) > time();
+
+        if ($idSiguiente === Fase::LISTO_PARA_ENTREGA
+            && $secadoSinTerminar
+            && empty($confirmaciones['secado'])) {
+            throw new DomainException(
+                'El secado todavía no termina (termina el ' . fechaHora($secado['fin_estimado'])
+                . '). Marca la casilla para confirmar que el mueble ya está listo.'
+            );
+        }
+
+        self::cambiarFase(
+            $proyecto,
+            $siguiente,
+            $usuario,
+            null,
+            !empty($confirmaciones['saldo']),
+            false
+        );
 
         return $siguiente;
+    }
+
+    /* ===== Secado (HU-09) ===== */
+
+    /**
+     * Devuelve la fecha y hora (al minuto) desde la que cuenta un secado:
+     * la última vez que el proyecto entró a la fase "Pintado".
+     *
+     * Recibe: $idProyecto.
+     * Devuelve: fecha "aaaa-mm-dd hh:mm:00", o null si nunca entró a "Pintado".
+     */
+    public static function inicioMinimoSecado(int $idProyecto): ?string {
+        $entrada = (new HistorialFase())->ultimaEntrada($idProyecto, Fase::PINTADO);
+
+        if ($entrada === null) {
+            return null;
+        }
+
+        return date('Y-m-d H:i:00', strtotime($entrada));
+    }
+
+    /**
+     * Devuelve el secado que cuenta para el proyecto: el más reciente
+     * programado desde la última entrada a "Pintado" (respuesta 2).
+     *
+     * Recibe: $idProyecto.
+     * Devuelve: datos del secado, o null si no hay.
+     */
+    public static function secadoVigente(int $idProyecto): ?array {
+        $desde = self::inicioMinimoSecado($idProyecto);
+
+        if ($desde === null) {
+            return null;
+        }
+
+        return (new Secado())->ultimoDesde($idProyecto, $desde);
+    }
+
+    /* ===== Reparaciones (RN-05) ===== */
+
+    /**
+     * Pasa la reparación a su siguiente estado: Recibido → En reparación →
+     * Lista para entrega → Entregada (solo hacia adelante, respuesta 14).
+     * Al entregar con saldo pendiente se pide confirmación (como RN-04).
+     *
+     * Recibe: $reparacion, datos completos; $usuario, datos de la sesión;
+     *         $confirmaSaldo, true si confirmó entregar con saldo.
+     * Devuelve: llave del estado nuevo. Lanza DomainException si no se puede.
+     */
+    public static function avanzarReparacion(
+        array $reparacion,
+        array $usuario,
+        bool $confirmaSaldo
+    ): string {
+        $nuevoEstado = Reparacion::siguienteEstado($reparacion['estado']);
+
+        if ($nuevoEstado === null) {
+            throw new DomainException('La reparación ya fue entregada.');
+        }
+
+        $saldo = PagoService::saldo($reparacion['costo'], $reparacion['pagado']);
+
+        if ($nuevoEstado === 'ENTREGADA' && $saldo > 0 && !$confirmaSaldo) {
+            throw new DomainException(
+                'La reparación tiene un saldo pendiente de ' . dinero($saldo)
+                . '. Marca la casilla de confirmación para entregarla.'
+            );
+        }
+
+        $entregadaEn = ($nuevoEstado === 'ENTREGADA') ? date('Y-m-d H:i:s') : null;
+
+        (new Reparacion())->actualizarEstado(
+            (int) $reparacion['id_reparacion'],
+            $nuevoEstado,
+            $entregadaEn
+        );
+
+        self::notificarEstadoReparacion($reparacion, $nuevoEstado, (int) $usuario['id_usuario']);
+
+        return $nuevoEstado;
+    }
+
+    /**
+     * Notifica el cambio de estado de una reparación (SRS 5.2 y
+     * respuesta 14): "Lista para entrega" al Carpintero, al Contador y al
+     * Cliente; "Entregada" al Contador.
+     *
+     * Recibe: $reparacion; $estado, estado nuevo; $idUsuarioActor.
+     * Devuelve: nada.
+     */
+    private static function notificarEstadoReparacion(
+        array $reparacion,
+        string $estado,
+        int $idUsuarioActor
+    ): void {
+        $idReparacion = (int) $reparacion['id_reparacion'];
+        $descripcion = $reparacion['folio'] . ' (' . $reparacion['descripcion_mueble'] . ')';
+
+        if ($estado === 'LISTA') {
+            $mensaje = "La reparación {$descripcion} está lista para entrega";
+
+            NotificacionService::notificar(
+                NotificacionService::usuariosDeRol(Auth::CARPINTERO),
+                'LISTO',
+                $mensaje,
+                '/reparaciones/' . $idReparacion,
+                $idUsuarioActor
+            );
+
+            NotificacionService::notificar(
+                NotificacionService::usuariosDeRol(Auth::CONTADOR),
+                'LISTO',
+                $mensaje,
+                null,
+                $idUsuarioActor
+            );
+
+            NotificacionService::notificar(
+                [(int) $reparacion['cliente_id_usuario']],
+                'LISTO',
+                self::mensajeListoCliente($reparacion['descripcion_mueble']),
+                '/mis-pedidos/reparacion/' . $idReparacion
+            );
+        }
+
+        if ($estado === 'ENTREGADA') {
+            NotificacionService::notificar(
+                NotificacionService::usuariosDeRol(Auth::CONTADOR),
+                'FASE',
+                "La reparación {$descripcion} fue entregada",
+                null,
+                $idUsuarioActor
+            );
+        }
     }
 
     /**
@@ -329,6 +494,7 @@ final class FaseService {
 
     /**
      * Arma el mensaje para el cliente cuando su mueble está listo (RN-04).
+     * En reparaciones se usa la descripción del mueble.
      *
      * Recibe: $tipoMueble, ej. "Ropero".
      * Devuelve: "Su ropero está listo, ya puede pasar a recogerlo".

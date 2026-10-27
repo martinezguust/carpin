@@ -68,4 +68,8 @@ View::$titulo = 'Iniciar sesión';
         </p>
     </section>
 
+    <a class="pagina-login__regreso" href="<?= e(View::url('/')) ?>">
+        Volver a la página de inicio
+    </a>
+
 </main>

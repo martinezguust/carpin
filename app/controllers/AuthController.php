@@ -19,21 +19,6 @@ class AuthController extends Controller {
     private const MSJ_BLOQUEADA = 'Demasiados intentos fallidos. Intenta de nuevo en 10 minutos.';
 
     /**
-     * Raíz del sistema. En la Fase 1 lleva al inicio de sesión o, si ya hay
-     * sesión, a la pantalla de inicio del rol (respuesta 4).
-     *
-     * Recibe: nada.
-     * Devuelve: nada (redirige).
-     */
-    public function raiz(): void {
-        if (Auth::estaAutenticado()) {
-            $this->redirigir(Auth::rutaInicio());
-        }
-
-        $this->redirigir('/login');
-    }
-
-    /**
      * Muestra la pantalla de inicio de sesión (mockup 2).
      *
      * Recibe: nada.
@@ -44,7 +29,7 @@ class AuthController extends Controller {
             $this->redirigir(Auth::rutaInicio());
         }
 
-        $this->vista('publico/login', ['username' => '', 'error' => null], 'publico');
+        $this->vista('publico/login', ['username' => '', 'error' => null], 'acceso');
     }
 
     /**
@@ -96,6 +81,9 @@ class AuthController extends Controller {
         // Acceso correcto
         $modelo->registrarAccesoExitoso($idUsuario);
         Auth::iniciarUsuario($cuenta);
+
+        // CU-01, paso 5: se generan las alertas periódicas pendientes
+        NotificacionService::revisarAlertasPeriodicas();
 
         $this->redirigir(Auth::rutaInicio($cuenta['rol']));
     }
@@ -172,7 +160,7 @@ class AuthController extends Controller {
      * Devuelve: nada (termina la petición).
      */
     private function mostrarError(string $username, string $mensaje): never {
-        $this->vista('publico/login', ['username' => $username, 'error' => $mensaje], 'publico');
+        $this->vista('publico/login', ['username' => $username, 'error' => $mensaje], 'acceso');
         exit;
     }
 

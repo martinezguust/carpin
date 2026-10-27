@@ -61,6 +61,18 @@ abstract class Controller {
     }
 
     /**
+     * Revisa que un texto sea una fecha real con formato aaaa-mm-dd.
+     *
+     * Recibe: $texto, valor capturado.
+     * Devuelve: true si es una fecha válida.
+     */
+    protected function fechaValida(string $texto): bool {
+        $fecha = DateTime::createFromFormat('Y-m-d', $texto);
+
+        return $fecha !== false && $fecha->format('Y-m-d') === $texto;
+    }
+
+    /**
      * Lee un campo de texto del formulario recibido por POST, sin espacios
      * al inicio ni al final.
      *

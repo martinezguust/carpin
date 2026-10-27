@@ -18,13 +18,9 @@ class AdminController extends Controller {
     public function panel(): void {
         Auth::requireRol([Auth::ADMINISTRADOR]);
 
-        $productos = (int) Database::get()
-            ->query('SELECT COUNT(*) FROM producto_catalogo WHERE activo = 1')
-            ->fetchColumn();
-
         $this->vista('admin/panel', [
             'totalUsuarios'  => (new Usuario())->contarActivos(),
-            'totalProductos' => $productos,
+            'totalProductos' => (new ProductoCatalogo())->contarVisibles(),
             'totalProyectos' => (new Proyecto())->contarActivos(),
         ], 'panel');
     }

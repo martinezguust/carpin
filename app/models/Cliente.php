@@ -9,6 +9,82 @@
 
 class Cliente extends Model {
 
+    /* ===== Cliente nuevo con su cuenta (proyectos y reparaciones) ===== */
+
+    /**
+     * Valida los datos y la cuenta de un cliente nuevo que captura el
+     * Carpintero (SRS 5.4, RN-06, RN-07). Los campos llevan el prefijo
+     * "cliente_" del formulario.
+     *
+     * Recibe: $datos, valores capturados.
+     * Devuelve: errores por campo (vacío si todo es válido).
+     */
+    public function validarNuevo(array $datos): array {
+        $errores = [];
+
+        if ($datos['cliente_nombre'] === '' || mb_strlen($datos['cliente_nombre']) > 120) {
+            $errores['cliente_nombre'] = 'Escribe el nombre del cliente (máximo 120 caracteres).';
+        }
+
+        $error = Usuario::validarTelefono($datos['cliente_telefono']);
+
+        if ($error !== null) {
+            $errores['cliente_telefono'] = $error;
+        }
+
+        $error = Usuario::validarCorreo($datos['cliente_correo']);
+
+        if ($error !== null) {
+            $errores['cliente_correo'] = $error;
+        }
+
+        if (mb_strlen($datos['cliente_direccion']) > 255) {
+            $errores['cliente_direccion'] = 'La dirección no puede pasar de 255 caracteres.';
+        }
+
+        $error = Usuario::validarUsername($datos['cliente_username']);
+
+        if ($error !== null) {
+            $errores['cliente_username'] = $error;
+        } elseif ((new Usuario())->existeUsername($datos['cliente_username'])) {
+            // CU-03, A1
+            $errores['cliente_username'] = 'Ese nombre de usuario ya existe, elija otro';
+        }
+
+        $error = Usuario::validarContrasena($datos['cliente_password']);
+
+        if ($error !== null) {
+            $errores['cliente_password'] = $error;
+        }
+
+        return $errores;
+    }
+
+    /**
+     * Crea la cuenta y los datos de un cliente nuevo (RF-16). Debe
+     * llamarse dentro de una transacción.
+     *
+     * Recibe: $datos, valores ya validados con el prefijo "cliente_".
+     * Devuelve: id del cliente creado.
+     */
+    public function crearConCuenta(array $datos): int {
+        $idUsuario = (new Usuario())->crear(
+            $datos['cliente_username'],
+            $datos['cliente_password'],
+            Auth::CLIENTE
+        );
+
+        return $this->crear(
+            $idUsuario,
+            $datos['cliente_nombre'],
+            $datos['cliente_telefono'],
+            $datos['cliente_correo'] !== '' ? $datos['cliente_correo'] : null,
+            $datos['cliente_direccion'] !== '' ? $datos['cliente_direccion'] : null
+        );
+    }
+
+    /* ===== Altas, cambios y consultas ===== */
+
     /**
      * Registra los datos de cliente de una cuenta nueva.
      *

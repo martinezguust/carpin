@@ -14,27 +14,42 @@ $usuarioSesion = Auth::usuario();
 $rolSesion = $usuarioSesion['rol'];
 $sinLeer = (new Notificacion())->contarSinLeer((int) $usuarioSesion['id_usuario']);
 
-// Opciones del menú lateral por rol (Fase 1; lo no construido queda oculto)
+// Solicitudes nuevas para el contador del menú del Carpintero (mockup 3)
+$cotizacionesNuevas = 0;
+
+if ($rolSesion === Auth::CARPINTERO) {
+    $cotizacionesNuevas = (new SolicitudCotizacion())->contarNuevas();
+}
+
+// Opciones del menú lateral por rol (SRS 10.3; lo no construido queda oculto):
+// ruta, texto, ícono y número a mostrar (0 para ninguno)
 $menusPorRol = [
     Auth::ADMINISTRADOR => [
-        ['/admin', 'Panel', 'bi-speedometer2'],
-        ['/usuarios', 'Usuarios', 'bi-people'],
+        ['/admin', 'Panel', 'bi-speedometer2', 0],
+        ['/usuarios', 'Usuarios', 'bi-people', 0],
+        ['/admin/catalogo', 'Catálogo', 'bi-grid', 0],
+        ['/admin/configuracion', 'Datos de la carpintería', 'bi-shop', 0],
     ],
     Auth::CARPINTERO    => [
-        ['/tablero', 'Panel', 'bi-kanban'],
-        ['/proyectos', 'Proyectos', 'bi-hammer'],
+        ['/tablero', 'Panel', 'bi-kanban', 0],
+        ['/proyectos', 'Proyectos', 'bi-hammer', 0],
+        ['/reparaciones', 'Reparaciones', 'bi-tools', 0],
+        ['/cotizaciones', 'Cotizaciones', 'bi-chat-left-text', $cotizacionesNuevas],
+        ['/porcentajes', 'Precios y porcentajes', 'bi-percent', 0],
     ],
     Auth::LIJADOR       => [
-        ['/mis-pendientes', 'Mis pendientes', 'bi-list-check'],
+        ['/mis-pendientes', 'Mis pendientes', 'bi-list-check', 0],
     ],
     Auth::PINTOR        => [
-        ['/mis-pendientes', 'Mis pendientes', 'bi-list-check'],
+        ['/mis-pendientes', 'Mis pendientes', 'bi-list-check', 0],
     ],
     Auth::CONTADOR      => [
-        ['/panel', 'Panel', 'bi-speedometer2'],
+        ['/panel', 'Panel', 'bi-speedometer2', 0],
+        ['/trabajadores', 'Trabajadores y formas de pago', 'bi-person-badge', 0],
+        ['/porcentajes', 'Porcentajes', 'bi-percent', 0],
     ],
     Auth::CLIENTE       => [
-        ['/mis-pedidos', 'Mis pedidos', 'bi-box-seam'],
+        ['/mis-pedidos', 'Mis pedidos', 'bi-box-seam', 0],
     ],
 ];
 
@@ -42,6 +57,17 @@ $menusPorRol = [
 $rutaBase = rtrim((string) parse_url(View::url('/'), PHP_URL_PATH), '/');
 $rutaPedida = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $rutaActual = '/' . trim(substr($rutaPedida, strlen($rutaBase)), '/');
+
+// La opción activa es la ruta más larga que coincide (ej. /admin/catalogo y no /admin)
+$rutaActiva = '';
+
+foreach ($menusPorRol[$rolSesion] ?? [] as $opcion) {
+    $coincide = $rutaActual === $opcion[0] || str_starts_with($rutaActual, $opcion[0] . '/');
+
+    if ($coincide && strlen($opcion[0]) > strlen($rutaActiva)) {
+        $rutaActiva = $opcion[0];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es-MX">
@@ -189,9 +215,8 @@ $rutaActual = '/' . trim(substr($rutaPedida, strlen($rutaBase)), '/');
             <nav class="menu-lateral__opciones">
                 <?php foreach ($menusPorRol[$rolSesion] ?? [] as $opcion): ?>
                     <?php
-                    [$rutaMenu, $textoMenu, $iconoMenu] = $opcion;
-                    $esActiva = $rutaActual === $rutaMenu
-                        || str_starts_with($rutaActual, $rutaMenu . '/');
+                    [$rutaMenu, $textoMenu, $iconoMenu, $numeroMenu] = $opcion;
+                    $esActiva = $rutaMenu === $rutaActiva;
                     $claseActiva = $esActiva ? 'menu-lateral__opcion--activa' : '';
                     ?>
                     <a
@@ -201,6 +226,9 @@ $rutaActual = '/' . trim(substr($rutaPedida, strlen($rutaBase)), '/');
                     >
                         <i class="bi <?= e($iconoMenu) ?>" aria-hidden="true"></i>
                         <?= e($textoMenu) ?>
+                        <?php if ($numeroMenu > 0): ?>
+                            <span class="menu-lateral__numero"><?= e($numeroMenu) ?></span>
+                        <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
             </nav>

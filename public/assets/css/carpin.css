@@ -1121,8 +1121,20 @@ h6 {
 
 /* ===== Inicio de sesión (mockup 2) ===== */
 
-.cuerpo-publico {
+.cuerpo-acceso {
     background-color: var(--carpin-nogal);
+}
+
+.pagina-login__regreso {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--carpin-beige);
+}
+
+.pagina-login__regreso:hover,
+.pagina-login__regreso:focus {
+    color: #FFFFFF;
 }
 
 .pagina-login {
@@ -1254,4 +1266,593 @@ h6 {
     .hoja-credenciales {
         border-style: solid;
     }
+}
+
+
+/* =====================================================
+ * Fase 2
+ * ===================================================== */
+
+
+/* ===== Botones extra ===== */
+
+.btn-carpin-contorno {
+    color: var(--carpin-crema);
+    background-color: transparent;
+    border: 1px solid var(--carpin-crema);
+}
+
+.btn-carpin-contorno:hover,
+.btn-carpin-contorno:focus {
+    color: var(--carpin-nogal);
+    background-color: var(--carpin-crema);
+}
+
+.btn-carpin-claro {
+    color: var(--carpin-nogal);
+    background-color: var(--carpin-crema);
+    border: 1px solid var(--carpin-crema);
+}
+
+.btn-carpin-claro:hover,
+.btn-carpin-claro:focus {
+    color: var(--carpin-nogal);
+    background-color: #FFFFFF;
+}
+
+.texto-peligro {
+    color: var(--carpin-error);
+}
+
+.texto-peligro:hover,
+.texto-peligro:focus {
+    color: var(--carpin-nogal);
+}
+
+
+/* ===== Menú lateral: número de pendientes ===== */
+
+.menu-lateral__numero {
+    min-width: 22px;
+    margin-left: auto;
+    padding: 0 7px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 22px;
+    text-align: center;
+    color: #FFFFFF;
+    background-color: var(--carpin-olivo);
+    border-radius: 11px;
+}
+
+
+/* ===== Página pública: menú y pie ===== */
+
+.cuerpo-publico {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--carpin-crema);
+}
+
+.cuerpo-publico main {
+    flex: 1;
+}
+
+.menu-publico {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background-color: var(--carpin-nogal);
+}
+
+.menu-publico .navbar {
+    min-height: var(--carpin-alto-barra);
+}
+
+.menu-publico__logo {
+    font-size: 1.375rem;
+    color: var(--carpin-crema);
+}
+
+.menu-publico .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--carpin-crema);
+}
+
+.menu-publico .nav-link:hover,
+.menu-publico .nav-link:focus {
+    color: #FFFFFF;
+}
+
+.pie-publico {
+    /* Espacio abajo para que el botón de WhatsApp no tape el texto */
+    padding: 20px 0 88px;
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--carpin-beige);
+    background-color: var(--carpin-nogal);
+}
+
+@media (min-width: 768px) {
+    .pie-publico {
+        padding: 20px 0;
+    }
+}
+
+
+/* ===== Página pública: secciones ===== */
+
+.portada {
+    padding: 56px 0;
+    color: var(--carpin-crema);
+    background: linear-gradient(135deg, var(--carpin-nogal) 0%, var(--carpin-madera) 100%);
+}
+
+.portada__antetitulo {
+    margin-bottom: 12px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--carpin-beige);
+}
+
+.portada__titulo {
+    margin-bottom: 16px;
+    font-size: clamp(2rem, 6vw, 3rem);
+    color: var(--carpin-crema);
+}
+
+.portada__texto {
+    max-width: 520px;
+    margin-bottom: 24px;
+    font-size: 1.0625rem;
+    color: var(--carpin-beige);
+}
+
+.portada__imagen {
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6rem;
+    color: var(--carpin-beige);
+    background: repeating-linear-gradient(
+        100deg,
+        rgba(234, 219, 200, 0.10) 0,
+        rgba(234, 219, 200, 0.10) 18px,
+        rgba(234, 219, 200, 0.02) 18px,
+        rgba(234, 219, 200, 0.02) 36px
+    );
+    border-radius: var(--carpin-radio);
+}
+
+.seccion-publica {
+    padding: 48px 0;
+}
+
+.seccion-publica--beige {
+    background-color: var(--carpin-beige);
+}
+
+.titulo-publico {
+    margin-bottom: 16px;
+    font-size: 1.75rem;
+}
+
+.texto-publico {
+    font-size: 1.0625rem;
+}
+
+.enlace-publico {
+    font-weight: 600;
+    color: var(--carpin-olivo);
+}
+
+.servicio {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background-color: var(--carpin-tarjeta);
+    border-radius: var(--carpin-radio);
+}
+
+.servicio__icono {
+    font-size: 1.75rem;
+    color: var(--carpin-madera);
+}
+
+.servicio__titulo {
+    margin-bottom: 4px;
+    font-family: var(--carpin-fuente-texto);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--carpin-texto);
+}
+
+
+/* ===== Catálogo ===== */
+
+.filtro-categorias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filtro-categorias__opcion {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    font-weight: 500;
+    color: var(--carpin-texto);
+    text-decoration: none;
+    background-color: var(--carpin-tarjeta);
+    border: 1px solid var(--carpin-borde);
+    border-radius: 999px;
+}
+
+.filtro-categorias__opcion:hover,
+.filtro-categorias__opcion:focus {
+    color: var(--carpin-nogal);
+    border-color: var(--carpin-madera);
+}
+
+.filtro-categorias__opcion--activa,
+.filtro-categorias__opcion--activa:hover,
+.filtro-categorias__opcion--activa:focus {
+    color: #FFFFFF;
+    background-color: var(--carpin-nogal);
+    border-color: var(--carpin-nogal);
+}
+
+.rejilla-productos {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 576px) {
+    .rejilla-productos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .rejilla-productos {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.tarjeta-producto {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--carpin-tarjeta);
+    border: 1px solid var(--carpin-borde);
+    border-radius: var(--carpin-radio);
+}
+
+.tarjeta-producto__foto {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.tarjeta-producto__foto--provisional {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: var(--carpin-madera);
+    background: repeating-linear-gradient(
+        90deg,
+        var(--carpin-beige) 0,
+        var(--carpin-beige) 14px,
+        var(--carpin-pendiente) 14px,
+        var(--carpin-pendiente) 22px
+    );
+}
+
+.tarjeta-producto__cuerpo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px 16px;
+}
+
+.tarjeta-producto__categoria {
+    margin-bottom: 2px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--carpin-texto-suave);
+}
+
+.tarjeta-producto__nombre {
+    margin-bottom: 6px;
+    font-family: var(--carpin-fuente-texto);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--carpin-texto);
+}
+
+.tarjeta-producto__descripcion {
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    color: var(--carpin-texto-suave);
+}
+
+.tarjeta-producto__precio {
+    margin-bottom: 12px;
+    font-size: 0.9375rem;
+}
+
+
+/* ===== Contacto y formulario público ===== */
+
+.tarjeta-contacto,
+.tarjeta-formulario-publico {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: var(--carpin-tarjeta);
+    border: 1px solid var(--carpin-borde);
+    border-radius: var(--carpin-radio);
+}
+
+.datos-contacto dt {
+    float: left;
+    margin-right: 6px;
+    font-weight: 700;
+}
+
+.datos-contacto dd {
+    margin-bottom: 8px;
+}
+
+.mapa-contacto {
+    width: 100%;
+    height: 280px;
+    margin: 8px 0 16px;
+    border: 0;
+    border-radius: 10px;
+}
+
+.btn-carpin-whatsapp {
+    color: #FFFFFF;
+    background-color: var(--carpin-whatsapp);
+    border: 1px solid var(--carpin-whatsapp);
+}
+
+.btn-carpin-whatsapp:hover,
+.btn-carpin-whatsapp:focus {
+    color: #FFFFFF;
+    filter: brightness(0.92);
+}
+
+
+/* ===== Nosotros: misión, visión y valores ===== */
+
+.tarjeta-identidad {
+    height: 100%;
+    padding: 20px;
+    background-color: var(--carpin-tarjeta);
+    border-radius: var(--carpin-radio);
+}
+
+.tarjeta-identidad__icono {
+    font-size: 1.75rem;
+    color: var(--carpin-madera);
+}
+
+.tarjeta-identidad__titulo {
+    margin: 8px 0;
+    font-size: 1.375rem;
+}
+
+.lista-valores {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lista-valores li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.lista-valores .bi {
+    color: var(--carpin-olivo);
+}
+
+
+/* ===== Botón flotante de WhatsApp (RF-10) ===== */
+
+.boton-whatsapp {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1040;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: #FFFFFF;
+    background-color: var(--carpin-whatsapp);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(43, 43, 43, 0.25);
+}
+
+.boton-whatsapp:hover,
+.boton-whatsapp:focus {
+    color: #FFFFFF;
+    filter: brightness(0.92);
+}
+
+
+/* ===== Administrador: catálogo y configuración ===== */
+
+.formulario-mediano {
+    max-width: 760px;
+}
+
+.miniatura {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.imagen-actual {
+    display: block;
+    width: 160px;
+    max-width: 100%;
+    margin-bottom: 8px;
+    border-radius: 10px;
+}
+
+.acciones-tabla {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.acciones-tabla .btn-link {
+    min-height: auto;
+    font-weight: 400;
+}
+
+.vista-logo {
+    padding: 20px;
+    text-align: center;
+    font-size: 1.75rem;
+    color: var(--carpin-crema);
+    background-color: var(--carpin-nogal);
+    border-radius: 10px;
+}
+
+.vista-logo .logo-imagen {
+    height: 96px;
+}
+
+
+/* ===== Mis pendientes: avance y producción ===== */
+
+.tarjeta-pendiente--te-toca {
+    border: 2px solid var(--carpin-olivo);
+}
+
+.tarjeta-pendiente__espera {
+    margin: 12px 0 0;
+    font-size: 0.9375rem;
+    color: var(--carpin-texto-suave);
+}
+
+.boton-avance {
+    width: 100%;
+    min-height: 52px;
+    white-space: normal;
+}
+
+.ficha-color__principal {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.ficha-color__notas {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--carpin-texto-suave);
+}
+
+.cuadros-produccion {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.cuadro-produccion {
+    padding: 10px 12px;
+    border: 1px solid var(--carpin-borde);
+    border-radius: 10px;
+}
+
+.cuadro-produccion__titulo {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--carpin-texto-suave);
+}
+
+.cuadro-produccion__valor {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.cuadro-produccion__valor--vacio {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--carpin-texto-suave);
+}
+
+.cuadro-produccion__valor--cumplido {
+    color: var(--carpin-exito);
+}
+
+.botones-produccion {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.botones-produccion .btn {
+    white-space: normal;
+}
+
+.formulario-produccion {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: var(--carpin-crema);
+    border-radius: 10px;
+}
+
+.lista-produccion {
+    margin-bottom: 16px;
+    padding-left: 18px;
+}
+
+.lista-produccion li {
+    margin-bottom: 6px;
+}
+
+
+/* ===== Fotos de reparaciones ===== */
+
+.galeria-fotos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.galeria-fotos__elemento img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 8px;
 }

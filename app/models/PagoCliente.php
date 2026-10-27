@@ -39,4 +39,27 @@ class PagoCliente extends Model {
         return (int) $this->db->lastInsertId();
     }
 
+    /**
+     * Registra un pago de una reparación.
+     *
+     * Recibe: $idReparacion; $monto, mayor a 0; $metodo, llave de METODOS;
+     *         $fecha, "aaaa-mm-dd"; $idUsuario, quién lo registró.
+     * Devuelve: id del pago.
+     */
+    public function registrarDeReparacion(
+        int $idReparacion,
+        string $monto,
+        string $metodo,
+        string $fecha,
+        int $idUsuario
+    ): int {
+        $consulta = $this->db->prepare(
+            'INSERT INTO pago_cliente (id_reparacion, monto, metodo, fecha, id_usuario) '
+            . 'VALUES (?, ?, ?, ?, ?)'
+        );
+        $consulta->execute([$idReparacion, $monto, $metodo, $fecha, $idUsuario]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
 }

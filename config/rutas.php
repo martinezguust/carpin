@@ -16,8 +16,15 @@
 
 /** @var Router $router */
 
+/* ===== Página pública (HU-20, HU-24) ===== */
+$router->get('/', 'PublicoController@inicio');
+$router->get('/catalogo', 'PublicoController@catalogo');
+$router->get('/nosotros', 'PublicoController@nosotros');
+$router->get('/contacto', 'PublicoController@contacto');
+$router->get('/cotizacion', 'PublicoController@cotizacion');
+$router->post('/cotizacion', 'PublicoController@guardarCotizacion');
+
 /* ===== Acceso (HU-18) ===== */
-$router->get('/', 'AuthController@raiz');
 $router->get('/login', 'AuthController@formulario');
 $router->post('/login', 'AuthController@iniciar');
 $router->post('/logout', 'AuthController@salir');
@@ -33,6 +40,19 @@ $router->post('/usuarios/{id}', 'UsuarioController@actualizar');
 $router->post('/usuarios/{id}/contrasena', 'UsuarioController@restablecerContrasena');
 $router->post('/usuarios/{id}/estado', 'UsuarioController@cambiarEstado');
 
+/* ===== Administrador: catálogo y datos de la carpintería (HU-21) ===== */
+$router->get('/admin/catalogo', 'CatalogoController@index');
+$router->get('/admin/catalogo/nuevo', 'CatalogoController@nuevo');
+$router->post('/admin/catalogo', 'CatalogoController@guardar');
+$router->get('/admin/catalogo/{id}/editar', 'CatalogoController@editar');
+$router->post('/admin/catalogo/{id}', 'CatalogoController@actualizar');
+$router->post('/admin/catalogo/{id}/visibilidad', 'CatalogoController@cambiarVisibilidad');
+$router->post('/admin/catalogo/{id}/eliminar', 'CatalogoController@eliminar');
+$router->get('/admin/configuracion', 'ConfigController@editar');
+$router->post('/admin/configuracion', 'ConfigController@guardar');
+$router->post('/admin/configuracion/logo', 'ConfigController@cambiarLogo');
+$router->post('/admin/configuracion/logo/quitar', 'ConfigController@quitarLogo');
+
 /* ===== Contador: panel ===== */
 $router->get('/panel', 'PanelController@contador');
 
@@ -43,19 +63,46 @@ $router->get('/proyectos/nuevo', 'ProyectoController@nuevo');
 $router->post('/proyectos', 'ProyectoController@guardar');
 $router->get('/proyectos/{id}/credenciales', 'ProyectoController@credenciales');
 $router->get('/proyectos/{id}', 'ProyectoController@detalle');
-$router->post('/proyectos/{id}/avanzar', 'ProyectoController@avanzar');
 $router->post('/proyectos/{id}/corregir', 'ProyectoController@corregir');
+
+/* ===== Avance de fase: Carpintero, Lijador y Pintor (HU-05, HU-10, HU-17) ===== */
+$router->post('/proyectos/{id}/avanzar', 'ProyectoController@avanzar');
 
 /* ===== Carpintero: actividades (HU-25) ===== */
 $router->post('/proyectos/{id}/actividades', 'ActividadController@asignar');
 $router->post('/actividades/{id}/reasignar', 'ActividadController@reasignar');
 
-/* ===== Lijador y Pintor: mis pendientes (HU-01) ===== */
-$router->get('/mis-pendientes', 'ProduccionController@misPendientes');
+/* ===== Carpintero: cotizaciones (HU-24) ===== */
+$router->get('/cotizaciones', 'CotizacionController@index');
+$router->get('/cotizaciones/{id}', 'CotizacionController@detalle');
+$router->post('/cotizaciones/{id}/estado', 'CotizacionController@cambiarEstado');
 
-/* ===== Cliente: portal (HU-23) ===== */
+/* ===== Carpintero: reparaciones (HU-26) ===== */
+$router->get('/reparaciones', 'ReparacionController@index');
+$router->get('/reparaciones/nueva', 'ReparacionController@nueva');
+$router->post('/reparaciones', 'ReparacionController@guardar');
+$router->get('/reparaciones/{id}/credenciales', 'ReparacionController@credenciales');
+$router->get('/reparaciones/{id}', 'ReparacionController@detalle');
+$router->post('/reparaciones/{id}/estado', 'ReparacionController@avanzarEstado');
+$router->post('/reparaciones/{id}/fotos', 'ReparacionController@subirFotos');
+
+/* ===== Lijador y Pintor: producción (HU-01, HU-02, HU-06, HU-08, HU-09) ===== */
+$router->get('/mis-pendientes', 'ProduccionController@misPendientes');
+$router->post('/proyectos/{id}/capas', 'ProduccionController@registrarCapa');
+$router->post('/proyectos/{id}/secado', 'ProduccionController@programarSecado');
+
+/* ===== Contador y Carpintero: formas de pago y porcentajes (HU-30) ===== */
+$router->get('/trabajadores', 'NominaController@trabajadores');
+$router->get('/trabajadores/{id}/editar', 'NominaController@editarTrabajador');
+$router->post('/trabajadores/{id}', 'NominaController@guardarTrabajador');
+$router->get('/porcentajes', 'NominaController@porcentajes');
+$router->post('/porcentajes/roles', 'NominaController@guardarPorcentajesRol');
+$router->post('/porcentajes/presupuestos', 'NominaController@guardarPorcentajesPresupuesto');
+
+/* ===== Cliente: portal (HU-23, HU-26) ===== */
 $router->get('/mis-pedidos', 'ClientePortalController@index');
 $router->get('/mis-pedidos/proyecto/{id}', 'ClientePortalController@proyecto');
+$router->get('/mis-pedidos/reparacion/{id}', 'ClientePortalController@reparacion');
 
 /* ===== Notificaciones (HU-29) ===== */
 $router->get('/notificaciones', 'NotificacionController@index');

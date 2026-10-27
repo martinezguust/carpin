@@ -116,6 +116,7 @@ class Actividad extends Model {
         $consulta = $this->db->prepare(
             'SELECT a.id_actividad, a.tipo, a.fecha_compromiso, '
             . 'p.id_proyecto, p.folio, p.tipo_mueble, p.madera, p.granulado_lija, '
+            . 'p.color, p.acabado, p.ficha_color, '
             . 'p.fecha_entrega, p.id_fase, f.nombre AS fase_nombre '
             . 'FROM actividad a '
             . 'JOIN proyecto p ON p.id_proyecto = a.id_proyecto '

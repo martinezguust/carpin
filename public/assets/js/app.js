@@ -8,7 +8,8 @@
  *   - confirmación antes de acciones irreversibles (RNF-07);
  *   - botones de imprimir;
  *   - mostrar u ocultar bloques de formularios;
- *   - formas de pago permitidas según el rol;
+ *   - formas de pago permitidas según el rol y su campo de tarifa;
+ *   - cuenta regresiva del tiempo de secado;
  *   - abrir la pestaña indicada en la dirección (#actividades).
  * =====================================================
  */
@@ -19,6 +20,9 @@
 
 // Cada cuánto se consulta la campana (RF-62)
 const INTERVALO_CAMPANA_MS = 60000;
+
+// Cada cuánto se actualiza la cuenta regresiva del secado
+const INTERVALO_CUENTA_MS = 30000;
 
 // URL base del sistema, ej. "http://localhost/carpin/public"
 const URL_BASE = document.body.dataset.urlBase || "";
@@ -249,6 +253,77 @@ function prepararFormasDePago() {
 }
 
 
+/* ===== Campos de tarifa según la forma de pago (HU-30) ===== */
+
+/**
+ * En el formulario de forma de pago de un trabajador, muestra solo el
+ * campo que corresponde: tarifa por hora, salario diario o la nota de
+ * pago por proyecto (elementos con data-forma-pago).
+ *
+ * Recibe: nada.
+ * Devuelve: nada.
+ */
+function prepararCamposFormaPago() {
+    const campos = document.querySelectorAll("[data-forma-pago]");
+    const selector = document.getElementById("forma_pago");
+
+    if (campos.length === 0 || selector === null) {
+        return;
+    }
+
+    const mostrarCampo = () => {
+        campos.forEach(campo => {
+            campo.hidden = campo.dataset.formaPago !== selector.value;
+        });
+    };
+
+    selector.addEventListener("change", mostrarCampo);
+    mostrarCampo();
+}
+
+
+/* ===== Cuenta regresiva del secado (RF-27) ===== */
+
+/**
+ * Convierte segundos en un texto como "3 h 20 min".
+ *
+ * Recibe: segundos, tiempo restante.
+ * Devuelve: el texto del tiempo restante.
+ */
+function textoTiempoRestante(segundos) {
+    const horas = Math.floor(segundos / 3600);
+    const minutos = Math.ceil((segundos % 3600) / 60);
+
+    if (horas === 0) {
+        return minutos + " min";
+    }
+
+    return horas + " h " + minutos + " min";
+}
+
+/**
+ * Actualiza cada elemento con data-fin-secado (fecha ISO de término)
+ * con el tiempo que falta, o "Cumplido" si ya terminó.
+ *
+ * Recibe: nada.
+ * Devuelve: nada.
+ */
+function actualizarCuentasRegresivas() {
+    document.querySelectorAll("[data-fin-secado]").forEach(elemento => {
+        const fin = new Date(elemento.dataset.finSecado).getTime();
+        const restante = Math.floor((fin - Date.now()) / 1000);
+
+        if (restante <= 0) {
+            elemento.textContent = "Cumplido";
+            elemento.classList.add("cuadro-produccion__valor--cumplido");
+            return;
+        }
+
+        elemento.textContent = textoTiempoRestante(restante);
+    });
+}
+
+
 /* ===== Pestaña indicada en la dirección ===== */
 
 /**
@@ -279,7 +354,13 @@ document.addEventListener("DOMContentLoaded", () => {
     prepararImpresion();
     prepararBloquesAlternos();
     prepararFormasDePago();
+    prepararCamposFormaPago();
     abrirPestanaDeDireccion();
+
+    if (document.querySelector("[data-fin-secado]") !== null) {
+        actualizarCuentasRegresivas();
+        window.setInterval(actualizarCuentasRegresivas, INTERVALO_CUENTA_MS);
+    }
 
     if (document.getElementById("campanaLista") !== null) {
         actualizarCampana();

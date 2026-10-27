@@ -2,19 +2,22 @@
 /*
  * =====================================================
  * Carpintería Carpin – app/views/carpintero/credenciales.php
- * Hoja imprimible con las credenciales del cliente nuevo
- * (RF-16, respuesta 8). La contraseña se muestra una sola
- * vez: al recargar la página ya no aparece.
- * Variables: $proyecto, $credenciales (o null), $negocio.
+ * Hoja imprimible con las credenciales del cliente nuevo de
+ * un proyecto o de una reparación (RF-16). La contraseña se
+ * muestra una sola vez: al recargar la página ya no aparece.
+ * Variables: $folio, $mueble, $clienteNombre, $tipoPedido
+ * ("Proyecto" o "Reparación"), $urlDetalle, $credenciales
+ * (o null) y $negocio.
  * =====================================================
  */
 
 View::$titulo = 'Credenciales del cliente';
 
-$urlProyecto = View::url('/proyectos/' . $proyecto['id_proyecto']);
+$urlRegreso = View::url($urlDetalle);
+$textoRegreso = ($tipoPedido === 'Proyecto') ? 'Ir al proyecto' : 'Ir a la reparación';
 ?>
 <div class="alert alert-success no-imprimir" role="alert">
-    Proyecto <?= e($proyecto['folio']) ?> registrado y cuenta del cliente creada.
+    <?= e($tipoPedido) ?> <?= e($folio) ?> registrado y cuenta del cliente creada.
 </div>
 
 <?php if ($credenciales === null): ?>
@@ -22,11 +25,11 @@ $urlProyecto = View::url('/proyectos/' . $proyecto['id_proyecto']);
         <h1 class="titulo-seccion">Credenciales no disponibles</h1>
         <p>
             Por seguridad, la contraseña solo se muestra una vez, justo después de registrar
-            el proyecto. Si el cliente la necesita de nuevo, pide al Administrador que la
+            el pedido. Si el cliente la necesita de nuevo, pide al Administrador que la
             restablezca.
         </p>
-        <a class="btn btn-carpin-primario" href="<?= e($urlProyecto) ?>">
-            Ir al proyecto
+        <a class="btn btn-carpin-primario" href="<?= e($urlRegreso) ?>">
+            <?= e($textoRegreso) ?>
         </a>
     </section>
 <?php else: ?>
@@ -41,10 +44,10 @@ $urlProyecto = View::url('/proyectos/' . $proyecto['id_proyecto']);
 
         <dl class="hoja-credenciales__datos">
             <dt>Cliente</dt>
-            <dd><?= e($proyecto['cliente_nombre']) ?></dd>
+            <dd><?= e($clienteNombre) ?></dd>
 
             <dt>Folio</dt>
-            <dd><?= e($proyecto['folio']) ?> · <?= e($proyecto['tipo_mueble']) ?></dd>
+            <dd><?= e($folio) ?> · <?= e($mueble) ?></dd>
 
             <dt>Usuario</dt>
             <dd class="hoja-credenciales__dato-clave"><?= e($credenciales['username']) ?></dd>
@@ -66,8 +69,8 @@ $urlProyecto = View::url('/proyectos/' . $proyecto['id_proyecto']);
             <i class="bi bi-printer" aria-hidden="true"></i>
             Imprimir
         </button>
-        <a class="btn btn-carpin-secundario" href="<?= e($urlProyecto) ?>">
-            Ir al proyecto
+        <a class="btn btn-carpin-secundario" href="<?= e($urlRegreso) ?>">
+            <?= e($textoRegreso) ?>
         </a>
     </div>
 

@@ -21,24 +21,49 @@ class Proyecto extends Model {
         . 'JOIN cliente c ON c.id_cliente = p.id_cliente ';
 
     /**
+     * Separa la ficha de color guardada como "Producto: Barniz | Notas: …"
+     * en sus dos partes (SRS 5.4).
+     *
+     * Recibe: $fichaColor, texto de proyecto.ficha_color o null.
+     * Devuelve: arreglo con 'producto' y 'notas' ("" si no vienen).
+     */
+    public static function separarFichaColor(?string $fichaColor): array {
+        $partes = [
+            'producto' => '',
+            'notas'    => '',
+        ];
+
+        foreach (explode(' | ', (string) $fichaColor) as $parte) {
+            if (str_starts_with($parte, 'Producto: ')) {
+                $partes['producto'] = substr($parte, strlen('Producto: '));
+            } elseif (str_starts_with($parte, 'Notas: ')) {
+                $partes['notas'] = substr($parte, strlen('Notas: '));
+            }
+        }
+
+        return $partes;
+    }
+
+    /**
      * Registra un proyecto nuevo en la fase "Cotizado".
      *
      * Recibe: $datos, arreglo con las columnas del proyecto (folio,
-     *         id_cliente, tipo_mueble, …, precio, status_pago,
-     *         id_usuario_registro).
+     *         id_cliente, id_solicitud, tipo_mueble, …, precio,
+     *         status_pago, id_usuario_registro).
      * Devuelve: id del proyecto creado.
      */
     public function crear(array $datos): int {
         $consulta = $this->db->prepare(
-            'INSERT INTO proyecto (folio, id_cliente, tipo_mueble, descripcion, '
+            'INSERT INTO proyecto (folio, id_cliente, id_solicitud, tipo_mueble, descripcion, '
             . 'alto_cm, ancho_cm, fondo_cm, madera, acabado, color, granulado_lija, '
             . 'ficha_color, fecha_registro, fecha_entrega, fecha_limite_pago, precio, '
             . 'id_fase, porcentaje_avance, status_pago, id_usuario_registro) '
-            . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $consulta->execute([
             $datos['folio'],
             $datos['id_cliente'],
+            $datos['id_solicitud'],
             $datos['tipo_mueble'],
             $datos['descripcion'],
             $datos['alto_cm'],

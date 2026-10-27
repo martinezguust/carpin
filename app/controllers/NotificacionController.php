@@ -41,6 +41,9 @@ class NotificacionController extends Controller {
             $this->json(['sesion' => false], 401);
         }
 
+        // Alertas periódicas en cada consulta de la campana (SRS 5.2)
+        NotificacionService::revisarAlertasPeriodicas();
+
         $modelo = new Notificacion();
         $idUsuario = (int) Auth::id();
         $lista = [];

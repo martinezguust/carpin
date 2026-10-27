@@ -105,6 +105,65 @@ class Trabajador extends Model {
     }
 
     /**
+     * Lista los trabajadores que entran a la nómina (todos menos el
+     * Administrador), con su rol y estado, para configurar su forma de
+     * pago (HU-30).
+     *
+     * Recibe: nada.
+     * Devuelve: lista ordenada por nombre.
+     */
+    public function listarConFormaPago(): array {
+        $consulta = $this->db->prepare(
+            'SELECT t.*, r.nombre AS rol, u.activo AS cuenta_activa '
+            . 'FROM trabajador t '
+            . 'JOIN usuario u ON u.id_usuario = t.id_usuario '
+            . 'JOIN rol r ON r.id_rol = u.id_rol '
+            . 'WHERE r.nombre <> ? '
+            . 'ORDER BY t.nombre_completo'
+        );
+        $consulta->execute([Auth::ADMINISTRADOR]);
+
+        return $consulta->fetchAll();
+    }
+
+    /**
+     * Indica si la forma de pago del trabajador está completa: por hora con
+     * tarifa, por día con salario o por proyecto (SRS 5.4).
+     *
+     * Recibe: $trabajador, datos con forma_pago, tarifa_hora y salario_dia.
+     * Devuelve: true si ya está configurada.
+     */
+    public static function estaConfigurado(array $trabajador): bool {
+        return match ($trabajador['forma_pago']) {
+            'HORA'     => $trabajador['tarifa_hora'] !== null,
+            'DIA'      => $trabajador['salario_dia'] !== null,
+            'PROYECTO' => true,
+            default    => false,
+        };
+    }
+
+    /**
+     * Guarda la forma de pago con su tarifa (HU-30, RF-43). La tarifa que
+     * no corresponde a la forma elegida se deja vacía.
+     *
+     * Recibe: $idTrabajador; $formaPago, HORA/DIA/PROYECTO;
+     *         $tarifaHora y $salarioDia, textos con 2 decimales o null.
+     * Devuelve: nada.
+     */
+    public function actualizarFormaPago(
+        int $idTrabajador,
+        string $formaPago,
+        ?string $tarifaHora,
+        ?string $salarioDia
+    ): void {
+        $consulta = $this->db->prepare(
+            'UPDATE trabajador SET forma_pago = ?, tarifa_hora = ?, salario_dia = ? '
+            . 'WHERE id_trabajador = ?'
+        );
+        $consulta->execute([$formaPago, $tarifaHora, $salarioDia, $idTrabajador]);
+    }
+
+    /**
      * Lista los trabajadores activos de un rol (para asignar actividades).
      *
      * Recibe: $rol, nombre del rol, ej. "LIJADOR".

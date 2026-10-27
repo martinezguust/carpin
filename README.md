@@ -14,7 +14,7 @@ La especificación completa está en [`docs/SRS.docx`](docs/SRS.docx) y es la ú
 |------|-----------|--------|
 | Fase 0 – Setup | Estructura, Composer + Dompdf, configuración, core, base de datos y datos de prueba | ✅ Terminada y aprobada |
 | Fase 1 – Sprint 1 | Acceso por roles, usuarios, proyectos, actividades, fases, portal del cliente y notificaciones | ✅ Terminada y aprobada |
-| Fase 2 – Sprint 2 | Producción, página pública, cotizaciones, reparaciones y formas de pago | Pendiente |
+| Fase 2 – Sprint 2 | Producción, página pública, cotizaciones, reparaciones y formas de pago | ✅ Terminada y aprobada |
 | Fase 3 – Sprint 3 | Inventario, reportes de daño, asistencia, pagos de clientes y saldos vencidos | Pendiente |
 | Fase 4 – Sprint 4 | Nómina, proveedores, presupuestos, costos y PDF | Pendiente |
 
@@ -123,7 +123,22 @@ Datos de ejemplo incluidos:
 
 ---
 
-## Pantallas disponibles por rol (Fase 1)
+## Pantallas disponibles (hasta la Fase 2)
+
+**Página pública** (sin sesión):
+
+- **Inicio:** portada, productos destacados, quiénes somos, servicios y "Visítanos" (mapa y,
+  debajo, dirección, horario y teléfono).
+- **Catálogo** con filtro por categoría.
+- **Nosotros (`/nosotros`):** quiénes somos, misión, visión, valores y servicios. Misión,
+  visión y valores son texto fijo en la vista (no se guardan en la base de datos).
+- **Contacto (`/contacto`):** dirección, horario, teléfono, mapa, botón de WhatsApp y
+  "Solicitar cotización".
+- **Solicitar cotización** e **Iniciar sesión**.
+
+Botón flotante de WhatsApp cuando el Administrador captura el número. Lo que el
+Administrador no captura no se muestra. Con sesión, el botón "Iniciar sesión" cambia a
+"Mi panel".
 
 Al iniciar sesión cada rol llega a su pantalla de inicio. Todos tienen la campana de
 notificaciones y el menú **Mi cuenta** (Cambiar contraseña / Cerrar sesión). Los módulos de
@@ -131,16 +146,38 @@ fases posteriores todavía no aparecen en los menús.
 
 | Rol | Pantalla de inicio | Menú |
 |-----|--------------------|------|
-| Administrador | `/admin` | Panel (totales) · Usuarios (lista con búsqueda y filtro por rol, alta, edición, restablecer contraseña, activar/desactivar) |
-| Carpintero | `/tablero` | Panel (tablero con las 9 fases) · Proyectos (lista con filtros, nuevo proyecto con cuenta del cliente, detalle con Datos / Actividades / Historial, avance y corrección de fase) |
-| Lijador | `/mis-pendientes` | Mis pendientes (con granulado de lija) |
-| Pintor | `/mis-pendientes` | Mis pendientes |
-| Contador | `/panel` | Panel de bienvenida |
-| Cliente | `/mis-pedidos` | Mis pedidos (gráfica de dona, etapas y resumen de pago) |
+| Administrador | `/admin` | Panel · Usuarios · Catálogo (alta, edición con imagen, ocultar/mostrar, eliminar) · Datos de la carpintería (datos, WhatsApp, mapa, cambiar/quitar logo) |
+| Carpintero | `/tablero` | Panel (tablero con las 9 fases) · Proyectos · Reparaciones (registro con fotos, estados, fotos de "después") · Cotizaciones (bandeja con número de nuevas, convertir en proyecto) · Precios y porcentajes |
+| Lijador | `/mis-pendientes` | Mis pendientes (granulado de lija y botón "Marcar como terminada") |
+| Pintor | `/mis-pendientes` | Mis pendientes (ficha de color, capas, secado con cuenta regresiva y botón "Marcar como terminada") |
+| Contador | `/panel` | Panel · Trabajadores y formas de pago · Porcentajes |
+| Cliente | `/mis-pedidos` | Mis pedidos (proyectos y reparaciones, gráfica de dona, etapas, fotos y resumen de pago) |
+
+### Aclaraciones aplicadas en la Fase 2 (aprobadas por el Product Owner)
+
+- Avance por trabajador (RN-02): Lijador 4→5→6, Pintor 6→7→8→9. Para pasar de "Pintado" a
+  "Secado" hay que programar el secado; para pasar a "Listo para entrega" antes de que termine
+  el secado se pide confirmar. Cuenta el secado más reciente desde la última entrada a "Pintado".
+- Capas y secado solo en la fase "Pintado". La capa lleva número automático y el producto se
+  prellena con el de la ficha. El aviso "terminó el secado" se genera al iniciar sesión o al
+  consultar la campana, solo si el proyecto sigue en "Pintado" o "Secado".
+- Portada con textos fijos y degradado de la paleta; lo que el Administrador no captura no se
+  muestra. "Nosotros" y "Contacto" son páginas separadas (cambio del 27/10/2026 que reemplaza
+  la página única con anclas de la aclaración 5.4). El mapa solo acepta direcciones `https://www.google.com/maps/embed…`; WhatsApp de 12 a
+  15 dígitos; teléfono de 10.
+- Un producto solo se elimina (con su imagen) si ninguna cotización lo menciona; si no, se oculta.
+- Cotizaciones: Nueva → Contactado → Convertida / Descartada. "Convertir en proyecto" precarga
+  nombre, teléfono, correo, producto (como tipo de mueble) y descripción con medidas.
+- Reparaciones: estados solo hacia adelante; al entregar con saldo se pide confirmar y se avisa
+  al Contador. De 1 a 6 fotos de "antes" al registrar (las inválidas se rechazan); las de
+  "después" se suben luego sin pasar de 6 en total.
+- Tarifas y porcentajes: los configuran el Contador y el Carpintero (RN-08), pero **el
+  Carpintero no puede editar su propia tarifa**. Porcentajes de 0 a 100; los de rol suman 100 %.
+- El inicio de un secado no puede ser anterior a la entrada a "Pintado"; si se reprograma, el
+  secado anterior ya no genera su aviso. Los textos de "Servicios" son fijos.
 
 ### Aclaraciones aplicadas en la Fase 1 (aprobadas por el Product Owner)
 
-- `/` lleva al inicio de sesión (la página pública llega en la Fase 2).
 - Bloqueo de 10 minutos al quinto intento fallido. "Cuenta desactivada" solo se informa
   cuando la contraseña es correcta.
 - El Administrador puede reactivar cuentas, cambiar nombres de usuario y editar clientes;

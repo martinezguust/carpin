@@ -96,15 +96,31 @@ class ProyectoController extends Controller {
     /* ===== Registro (CU-03) ===== */
 
     /**
-     * Muestra el formulario de nuevo proyecto.
+     * Muestra el formulario de nuevo proyecto. Si viene de "Convertir en
+     * proyecto", precarga los datos de la solicitud de cotización (RF-14,
+     * respuesta 13 de la Fase 2).
      *
-     * Recibe: nada.
+     * Recibe: nada (usa $_GET['cotizacion'], opcional).
      * Devuelve: nada.
      */
     public function nuevo(): void {
         Auth::requireRol([Auth::CARPINTERO]);
 
-        $this->mostrarFormulario($this->datosVacios(), []);
+        $datos = $this->datosVacios();
+        $idCotizacion = (string) ($_GET['cotizacion'] ?? '');
+
+        if (ctype_digit($idCotizacion)) {
+            $solicitud = $this->solicitudConvertible((int) $idCotizacion);
+
+            if ($solicitud === null) {
+                Flash::agregar('error', 'Esa solicitud de cotización ya no se puede convertir.');
+                $this->redirigir('/cotizaciones');
+            }
+
+            $datos = array_merge($datos, $this->precargaDeSolicitud($solicitud));
+        }
+
+        $this->mostrarFormulario($datos, []);
     }
 
     /**
@@ -130,6 +146,7 @@ class ProyectoController extends Controller {
         $anticipo = ($datos['anticipo'] === '') ? 0.0 : round((float) $datos['anticipo'], 2);
         $hoy = date('Y-m-d');
         $idUsuarioActual = (int) Auth::id();
+        $idSolicitud = ($datos['id_solicitud'] !== '') ? (int) $datos['id_solicitud'] : null;
 
         $db = Database::get();
 
@@ -138,18 +155,7 @@ class ProyectoController extends Controller {
 
             // 1. Cuenta y datos del cliente nuevo (RF-16)
             if ($esClienteNuevo) {
-                $idUsuarioCliente = (new Usuario())->crear(
-                    $datos['cliente_username'],
-                    $datos['cliente_password'],
-                    Auth::CLIENTE
-                );
-                $idCliente = (new Cliente())->crear(
-                    $idUsuarioCliente,
-                    $datos['cliente_nombre'],
-                    $datos['cliente_telefono'],
-                    $datos['cliente_correo'] !== '' ? $datos['cliente_correo'] : null,
-                    $datos['cliente_direccion'] !== '' ? $datos['cliente_direccion'] : null
-                );
+                $idCliente = (new Cliente())->crearConCuenta($datos);
             } else {
                 $idCliente = (int) $datos['id_cliente'];
             }
@@ -161,6 +167,7 @@ class ProyectoController extends Controller {
             $idProyecto = (new Proyecto())->crear([
                 'folio'               => $folio,
                 'id_cliente'          => $idCliente,
+                'id_solicitud'        => $idSolicitud,
                 'tipo_mueble'         => $datos['tipo_mueble'],
                 'descripcion'         => $this->nuloSiVacio($datos['descripcion']),
                 'alto_cm'             => $this->nuloSiVacio($datos['alto_cm']),
@@ -201,6 +208,11 @@ class ProyectoController extends Controller {
                 );
             }
 
+            // 5. Solicitud de cotización convertida en proyecto (RF-14)
+            if ($idSolicitud !== null) {
+                (new SolicitudCotizacion())->cambiarEstado($idSolicitud, 'CONVERTIDA');
+            }
+
             $db->commit();
         } catch (Throwable $error) {
             if ($db->inTransaction()) {
@@ -212,7 +224,7 @@ class ProyectoController extends Controller {
 
         if ($esClienteNuevo) {
             // La contraseña se muestra una sola vez en la hoja de credenciales
-            $_SESSION['credenciales'][$idProyecto] = [
+            $_SESSION['credenciales']['PRY' . $idProyecto] = [
                 'username' => $datos['cliente_username'],
                 'password' => $datos['cliente_password'],
             ];
@@ -236,15 +248,20 @@ class ProyectoController extends Controller {
 
         $idProyecto = $this->idDeRuta($id);
         $proyecto = $this->buscarProyecto($idProyecto);
-        $credenciales = $_SESSION['credenciales'][$idProyecto] ?? null;
+        $llave = 'PRY' . $idProyecto;
+        $credenciales = $_SESSION['credenciales'][$llave] ?? null;
 
         // Se borra de la sesión: si se recarga la página ya no se muestra
-        unset($_SESSION['credenciales'][$idProyecto]);
+        unset($_SESSION['credenciales'][$llave]);
 
         $this->vista('carpintero/credenciales', [
-            'proyecto'     => $proyecto,
-            'credenciales' => $credenciales,
-            'negocio'      => (new Configuracion())->obtener(),
+            'folio'         => $proyecto['folio'],
+            'mueble'        => $proyecto['tipo_mueble'],
+            'clienteNombre' => $proyecto['cliente_nombre'],
+            'tipoPedido'    => 'Proyecto',
+            'urlDetalle'    => '/proyectos/' . $idProyecto,
+            'credenciales'  => $credenciales,
+            'negocio'       => (new Configuracion())->obtener(),
         ], 'panel');
     }
 
@@ -281,18 +298,22 @@ class ProyectoController extends Controller {
             'historial'           => (new HistorialFase())->listarPorProyecto($idProyecto),
             'trabajadoresPorTipo' => $trabajadoresPorTipo,
             'rolPorTipo'          => Actividad::ROL_POR_TIPO,
+            'capas'               => (new CapaPintura())->listarPorProyecto($idProyecto),
+            'secados'             => (new Secado())->listarPorProyecto($idProyecto),
         ], 'panel');
     }
 
     /**
-     * Avance normal del Carpintero: 1→2→3→4 y 9→10 (SRS 5.4).
+     * Avance normal de fase (RF-20, RN-02, SRS 5.4): el Carpintero
+     * 1→2→3→4 y 9→10, el Lijador 4→5→6 y el Pintor 6→7→8→9.
      * Si no le corresponde responde 403 (CU-05, A1).
      *
-     * Recibe: $id, id del proyecto (segmento de la ruta).
-     * Devuelve: nada (redirige al detalle).
+     * Recibe: $id, id del proyecto (segmento de la ruta);
+     *         $_POST: confirmar_saldo y confirmar_secado (opcionales).
+     * Devuelve: nada (redirige al detalle o a "Mis pendientes").
      */
     public function avanzar(string $id): void {
-        Auth::requireRol([Auth::CARPINTERO]);
+        Auth::requireRol([Auth::CARPINTERO, Auth::LIJADOR, Auth::PINTOR]);
 
         $proyecto = $this->buscarProyecto($this->idDeRuta($id));
 
@@ -301,17 +322,26 @@ class ProyectoController extends Controller {
         }
 
         try {
-            $faseNueva = FaseService::avanzar(
-                $proyecto,
-                Auth::usuario(),
-                $this->textoPost('confirmar_saldo') === '1'
-            );
-            Flash::agregar('exito', "El proyecto pasó a la fase \"{$faseNueva['nombre']}\".");
+            $faseNueva = FaseService::avanzar($proyecto, Auth::usuario(), [
+                'saldo'  => $this->textoPost('confirmar_saldo') === '1',
+                'secado' => $this->textoPost('confirmar_secado') === '1',
+            ]);
+
+            // Mensaje del diagrama 12.4 al enviar a pintura (respuesta 19)
+            if ((int) $faseNueva['id_fase'] === Fase::LISTO_PARA_PINTURA) {
+                Flash::agregar('exito', 'Proyecto enviado a pintura.');
+            } else {
+                Flash::agregar('exito', "El proyecto pasó a la fase \"{$faseNueva['nombre']}\".");
+            }
         } catch (DomainException $error) {
             Flash::agregar('error', $error->getMessage());
         }
 
-        $this->redirigir('/proyectos/' . $proyecto['id_proyecto']);
+        if (Auth::rol() === Auth::CARPINTERO) {
+            $this->redirigir('/proyectos/' . $proyecto['id_proyecto']);
+        }
+
+        $this->redirigir('/mis-pendientes');
     }
 
     /**
@@ -395,6 +425,7 @@ class ProyectoController extends Controller {
             'tipo_mueble', 'descripcion', 'alto_cm', 'ancho_cm', 'fondo_cm', 'madera',
             'acabado', 'color', 'granulado_lija', 'ficha_producto', 'ficha_notas',
             'fecha_entrega', 'fecha_limite_pago', 'precio', 'anticipo', 'metodo_anticipo',
+            'id_solicitud',
         ];
 
         $datos = array_fill_keys($campos, '');
@@ -445,7 +476,16 @@ class ProyectoController extends Controller {
                 $errores['id_cliente'] = 'Elige un cliente de la lista.';
             }
         } else {
-            $errores = array_merge($errores, $this->validarClienteNuevo($datos));
+            $errores = array_merge($errores, (new Cliente())->validarNuevo($datos));
+        }
+
+        /* --- Solicitud de cotización de origen (opcional) --- */
+        $solicitudValida = $datos['id_solicitud'] === ''
+            || (ctype_digit($datos['id_solicitud'])
+                && $this->solicitudConvertible((int) $datos['id_solicitud']) !== null);
+
+        if (!$solicitudValida) {
+            $errores['id_solicitud'] = 'La solicitud de cotización ya no se puede convertir.';
         }
 
         /* --- Mueble --- */
@@ -543,50 +583,50 @@ class ProyectoController extends Controller {
     }
 
     /**
-     * Valida los datos y la cuenta de un cliente nuevo (SRS 5.4, RN-06, RN-07).
+     * Busca una solicitud de cotización que todavía se pueda convertir en
+     * proyecto (estado Nueva o Contactado).
      *
-     * Recibe: $datos, valores capturados.
-     * Devuelve: errores por campo.
+     * Recibe: $idSolicitud.
+     * Devuelve: datos de la solicitud, o null si no existe o ya se cerró.
      */
-    private function validarClienteNuevo(array $datos): array {
-        $errores = [];
+    private function solicitudConvertible(int $idSolicitud): ?array {
+        $solicitud = (new SolicitudCotizacion())->buscarPorId($idSolicitud);
 
-        if ($datos['cliente_nombre'] === '' || mb_strlen($datos['cliente_nombre']) > 120) {
-            $errores['cliente_nombre'] = 'Escribe el nombre del cliente (máximo 120 caracteres).';
+        if ($solicitud === null) {
+            return null;
         }
 
-        $error = Usuario::validarTelefono($datos['cliente_telefono']);
-
-        if ($error !== null) {
-            $errores['cliente_telefono'] = $error;
+        if (!in_array($solicitud['estado'], SolicitudCotizacion::ESTADOS_ABIERTOS, true)) {
+            return null;
         }
 
-        $error = Usuario::validarCorreo($datos['cliente_correo']);
+        return $solicitud;
+    }
 
-        if ($error !== null) {
-            $errores['cliente_correo'] = $error;
+    /**
+     * Arma los valores que se precargan al convertir una solicitud
+     * (respuesta 13): nombre, teléfono y correo para el cliente nuevo; el
+     * producto como tipo de mueble; la descripción y las medidas juntas.
+     *
+     * Recibe: $solicitud, datos de la solicitud de cotización.
+     * Devuelve: valores del formulario a precargar.
+     */
+    private function precargaDeSolicitud(array $solicitud): array {
+        $descripcion = $solicitud['descripcion'];
+
+        if ($solicitud['medidas'] !== null && $solicitud['medidas'] !== '') {
+            $descripcion .= "\nMedidas: " . $solicitud['medidas'];
         }
 
-        if (mb_strlen($datos['cliente_direccion']) > 255) {
-            $errores['cliente_direccion'] = 'La dirección no puede pasar de 255 caracteres.';
-        }
-
-        $error = Usuario::validarUsername($datos['cliente_username']);
-
-        if ($error !== null) {
-            $errores['cliente_username'] = $error;
-        } elseif ((new Usuario())->existeUsername($datos['cliente_username'])) {
-            // CU-03, A1
-            $errores['cliente_username'] = 'Ese nombre de usuario ya existe, elija otro';
-        }
-
-        $error = Usuario::validarContrasena($datos['cliente_password']);
-
-        if ($error !== null) {
-            $errores['cliente_password'] = $error;
-        }
-
-        return $errores;
+        return [
+            'id_solicitud'     => (string) $solicitud['id_solicitud'],
+            'tipo_cliente'     => 'nuevo',
+            'cliente_nombre'   => $solicitud['nombre'],
+            'cliente_telefono' => $solicitud['telefono'],
+            'cliente_correo'   => (string) $solicitud['correo'],
+            'tipo_mueble'      => mb_substr((string) $solicitud['producto_nombre'], 0, 60),
+            'descripcion'      => $descripcion,
+        ];
     }
 
     /**
@@ -608,18 +648,6 @@ class ProyectoController extends Controller {
         }
 
         return ($partes === []) ? null : implode(' | ', $partes);
-    }
-
-    /**
-     * Revisa que un texto sea una fecha real con formato aaaa-mm-dd.
-     *
-     * Recibe: $texto, valor capturado.
-     * Devuelve: true si es una fecha válida.
-     */
-    private function fechaValida(string $texto): bool {
-        $fecha = DateTime::createFromFormat('Y-m-d', $texto);
-
-        return $fecha !== false && $fecha->format('Y-m-d') === $texto;
     }
 
     /**

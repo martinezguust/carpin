@@ -32,6 +32,22 @@ class HistorialFase extends Model {
     }
 
     /**
+     * Devuelve la fecha de la última vez que el proyecto entró a una fase.
+     *
+     * Recibe: $idProyecto; $idFase.
+     * Devuelve: fecha "aaaa-mm-dd hh:mm:ss", o null si nunca entró.
+     */
+    public function ultimaEntrada(int $idProyecto, int $idFase): ?string {
+        $consulta = $this->db->prepare(
+            'SELECT MAX(fecha) FROM historial_fase WHERE id_proyecto = ? AND id_fase_nueva = ?'
+        );
+        $consulta->execute([$idProyecto, $idFase]);
+        $fecha = $consulta->fetchColumn();
+
+        return ($fecha === false || $fecha === null) ? null : (string) $fecha;
+    }
+
+    /**
      * Lista los cambios de fase de un proyecto, del más reciente al más antiguo.
      *
      * Recibe: $idProyecto.
