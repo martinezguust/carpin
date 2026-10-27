@@ -24,10 +24,22 @@ final class Auth {
 
     /* ===== Inicio y cierre de la sesión ===== */
 
+    /* ===== Pantalla de inicio de cada rol ===== */
+    private const RUTA_INICIO = [
+        self::ADMINISTRADOR => '/admin',
+        self::CARPINTERO    => '/tablero',
+        self::LIJADOR       => '/mis-pendientes',
+        self::PINTOR        => '/mis-pendientes',
+        self::CONTADOR      => '/panel',
+        self::CLIENTE       => '/mis-pedidos',
+    ];
+
     /**
      * Inicia la sesión de PHP con cookies seguras y revisa la inactividad.
      * Si pasaron más minutos de los configurados desde la última petición,
      * la sesión se cierra y se deja un aviso para el usuario.
+     * La consulta automática de la campana (encabezado X-Carpin-Sondeo)
+     * no cuenta como actividad, para que la sesión sí pueda expirar.
      *
      * Recibe: nada.
      * Devuelve: nada.
@@ -64,7 +76,11 @@ final class Auth {
             }
         }
 
-        $_SESSION['ultima_actividad'] = time();
+        $esSondeo = ($_SERVER['HTTP_X_CARPIN_SONDEO'] ?? '') === '1';
+
+        if (!$esSondeo || !isset($_SESSION['ultima_actividad'])) {
+            $_SESSION['ultima_actividad'] = time();
+        }
     }
 
     /**
@@ -158,12 +174,44 @@ final class Auth {
      * Devuelve: nada.
      */
     public static function requireLogin(): void {
+        // Si el Administrador desactivó la cuenta, la sesión abierta se cierra (RF-06)
+        if (self::estaAutenticado() && !self::cuentaSigueActiva()) {
+            self::cerrarSesion();
+            session_start();
+            Flash::agregar('error', 'Cuenta desactivada, contacte a la carpintería.');
+        }
+
         if (self::estaAutenticado()) {
             return;
         }
 
         header('Location: ' . View::url('/login'));
         exit;
+    }
+
+    /**
+     * Devuelve la ruta de la pantalla de inicio que corresponde a un rol.
+     *
+     * Recibe: $rol, nombre del rol (null toma el rol del usuario actual).
+     * Devuelve: ruta interna, ej. "/tablero"; "/login" si no hay rol.
+     */
+    public static function rutaInicio(?string $rol = null): string {
+        $rol = $rol ?? self::rol();
+
+        return self::RUTA_INICIO[$rol] ?? '/login';
+    }
+
+    /**
+     * Revisa en la base de datos que la cuenta del usuario siga activa.
+     *
+     * Recibe: nada (usa el usuario de la sesión).
+     * Devuelve: true si la cuenta existe y tiene activo = 1.
+     */
+    private static function cuentaSigueActiva(): bool {
+        $consulta = Database::get()->prepare('SELECT activo FROM usuario WHERE id_usuario = ?');
+        $consulta->execute([self::id()]);
+
+        return (int) $consulta->fetchColumn() === 1;
     }
 
     /**

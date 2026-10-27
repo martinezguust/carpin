@@ -12,8 +12,8 @@ La especificación completa está en [`docs/SRS.docx`](docs/SRS.docx) y es la ú
 
 | Fase | Contenido | Estado |
 |------|-----------|--------|
-| Fase 0 – Setup | Estructura, Composer + Dompdf, configuración, core, base de datos y datos de prueba | ✅ Terminada (pendiente de revisión del equipo) |
-| Fase 1 – Sprint 1 | Acceso por roles, usuarios, proyectos, actividades, fases, portal del cliente y notificaciones | Pendiente |
+| Fase 0 – Setup | Estructura, Composer + Dompdf, configuración, core, base de datos y datos de prueba | ✅ Terminada y aprobada |
+| Fase 1 – Sprint 1 | Acceso por roles, usuarios, proyectos, actividades, fases, portal del cliente y notificaciones | ✅ Terminada y aprobada |
 | Fase 2 – Sprint 2 | Producción, página pública, cotizaciones, reparaciones y formas de pago | Pendiente |
 | Fase 3 – Sprint 3 | Inventario, reportes de daño, asistencia, pagos de clientes y saldos vencidos | Pendiente |
 | Fase 4 – Sprint 4 | Nómina, proveedores, presupuestos, costos y PDF | Pendiente |
@@ -89,7 +89,9 @@ Todos los comandos se ejecutan desde la carpeta del proyecto (`C:\xampp\htdocs\c
    php database/verificar.php
    ```
 
-   Debe terminar con `RESULTADO: todo correcto. La Fase 0 está lista.`
+   Debe terminar con `RESULTADO: todo correcto. La instalación está lista.`
+
+   Para regresar la base a sus datos de prueba originales se repiten los pasos 3 y 4.
 
 6. **Abrir el sistema** en http://localhost/carpin/public
    (http://localhost/carpin/ redirige ahí automáticamente).
@@ -121,6 +123,46 @@ Datos de ejemplo incluidos:
 
 ---
 
+## Pantallas disponibles por rol (Fase 1)
+
+Al iniciar sesión cada rol llega a su pantalla de inicio. Todos tienen la campana de
+notificaciones y el menú **Mi cuenta** (Cambiar contraseña / Cerrar sesión). Los módulos de
+fases posteriores todavía no aparecen en los menús.
+
+| Rol | Pantalla de inicio | Menú |
+|-----|--------------------|------|
+| Administrador | `/admin` | Panel (totales) · Usuarios (lista con búsqueda y filtro por rol, alta, edición, restablecer contraseña, activar/desactivar) |
+| Carpintero | `/tablero` | Panel (tablero con las 9 fases) · Proyectos (lista con filtros, nuevo proyecto con cuenta del cliente, detalle con Datos / Actividades / Historial, avance y corrección de fase) |
+| Lijador | `/mis-pendientes` | Mis pendientes (con granulado de lija) |
+| Pintor | `/mis-pendientes` | Mis pendientes |
+| Contador | `/panel` | Panel de bienvenida |
+| Cliente | `/mis-pedidos` | Mis pedidos (gráfica de dona, etapas y resumen de pago) |
+
+### Aclaraciones aplicadas en la Fase 1 (aprobadas por el Product Owner)
+
+- `/` lleva al inicio de sesión (la página pública llega en la Fase 2).
+- Bloqueo de 10 minutos al quinto intento fallido. "Cuenta desactivada" solo se informa
+  cuando la contraseña es correcta.
+- El Administrador puede reactivar cuentas, cambiar nombres de usuario y editar clientes;
+  no puede desactivarse ni quitarse el rol a sí mismo. Teléfono de 10 dígitos obligatorio.
+- "Por proyecto" solo para Lijador y Pintor; el Administrador nunca tiene forma de pago.
+- Avance normal del Carpintero: 1→2→3→4 y 9→10. Cualquier otro cambio es una corrección
+  con motivo obligatorio. Al entregar con saldo pendiente se pide confirmación (RN-04).
+- Las actividades se terminan al llegar a su fase (Armado 4, Lijado 6, Pintura 9) y vuelven a
+  pendientes si una corrección regresa el proyecto antes de esa fase.
+- Notificaciones: tabla 5.2 del SRS más, en correcciones a otras fases, los trabajadores
+  asignados que deben actuar ahí. Se avisa a **todos** los usuarios activos del rol.
+  La campana muestra las 10 más recientes y se actualiza cada 60 s sin contar como actividad
+  de la sesión.
+- La contraseña del cliente nuevo se muestra una sola vez en la hoja de credenciales.
+- No se notifica a quien hizo la acción (por ejemplo, el Carpintero que corrige una fase).
+- La fecha compromiso de una actividad no puede ser anterior a hoy.
+- Si se asigna una actividad cuando el proyecto ya pasó su fase de término, nace terminada.
+- Si el Administrador desactiva una cuenta con sesión abierta, esa sesión se cierra en la
+  siguiente pantalla que abra.
+
+---
+
 ## Estructura del proyecto (SRS 14.2)
 
 ```
@@ -129,16 +171,19 @@ carpin/
 ├── public/            ← única carpeta expuesta por Apache
 │   ├── index.php      ← front controller
 │   ├── .htaccess      ← reescritura a index.php
-│   ├── assets/        ← css/carpin.css, js/, img/, vendor/ (Bootstrap, íconos, Chart.js, fuentes)
+│   ├── assets/        ← css/carpin.css, js/app.js, js/avance.js, img/,
+│   │                     vendor/ (Bootstrap, íconos, Chart.js, fuentes)
 │   └── uploads/       ← archivos subidos (nunca se ejecuta PHP aquí)
 │       ├── comprobantes/   ← bloqueada: se entrega por controlador
 │       └── archivos_prov/  ← bloqueada: se entrega por controlador
 ├── app/
 │   ├── core/          ← Router, Controller, Model, Database, Auth, Csrf, View, Upload, Flash
-│   ├── controllers/
-│   ├── models/
-│   ├── services/
-│   └── views/         ← layouts/, publico/, admin/, …, pdf/, errores/ (403, 404, 500)
+│   ├── controllers/   ← uno por módulo (Auth, Usuario, Proyecto, Actividad, Panel, …)
+│   ├── models/        ← un modelo por tabla principal
+│   ├── services/      ← reglas de negocio (FaseService, PagoService, FolioService, …)
+│   └── views/         ← layouts/, publico/, admin/, carpintero/, lijador/, pintor/,
+│                         contador/, cliente/, comun/ (pantallas de todos los roles),
+│                         pdf/, errores/ (403, 404, 500)
 ├── config/            ← config.example.php, config.php (no se sube a Git), rutas.php
 ├── database/          ← schema.sql, seed.sql, seed.php, verificar.php, migraciones/
 ├── docs/              ← SRS.docx y diagramas/*.puml

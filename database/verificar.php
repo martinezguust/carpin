@@ -243,7 +243,7 @@ foreach ($proyectos as $proyecto) {
 echo PHP_EOL;
 
 if ($errores === 0) {
-    echo 'RESULTADO: todo correcto. La Fase 0 está lista.' . PHP_EOL;
+    echo 'RESULTADO: todo correcto. La instalación está lista.' . PHP_EOL;
     exit(0);
 }
 
