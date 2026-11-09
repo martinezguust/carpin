@@ -4,10 +4,11 @@
  * Carpintería Carpin – app/views/carpintero/proyecto_detalle.php
  * Detalle del proyecto para el Carpintero (SRS 10.3):
  * fase actual con avance normal y corrección (HU-17), y las
- * pestañas Datos, Actividades (HU-25) e Historial (RF-22).
- * Las pestañas Materiales y Pagos se agregan en la Fase 3.
+ * pestañas Datos, Actividades (HU-25), Historial (RF-22),
+ * Materiales (salidas de inventario) y Pagos (solo consulta).
  * Variables: $proyecto, $saldo, $fases, $siguienteFase,
- * $actividades, $historial, $trabajadoresPorTipo, $rolPorTipo.
+ * $actividades, $historial, $trabajadoresPorTipo, $rolPorTipo,
+ * $capas, $secados, $salidas, $pagos.
  * =====================================================
  */
 
@@ -71,6 +72,30 @@ $avance = (float) $proyecto['porcentaje_avance'];
             aria-selected="false"
         >Historial</button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button
+            class="nav-link"
+            id="pestanaMateriales"
+            type="button"
+            role="tab"
+            data-bs-toggle="tab"
+            data-bs-target="#materiales"
+            aria-controls="materiales"
+            aria-selected="false"
+        >Materiales</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button
+            class="nav-link"
+            id="pestanaPagos"
+            type="button"
+            role="tab"
+            data-bs-toggle="tab"
+            data-bs-target="#pagos"
+            aria-controls="pagos"
+            aria-selected="false"
+        >Pagos</button>
+    </li>
 </ul>
 
 <div class="tab-content tarjeta-carpin tarjeta-carpin--pestanas">
@@ -99,5 +124,29 @@ $avance = (float) $proyecto['porcentaje_avance'];
         aria-labelledby="pestanaHistorial"
     >
         <?php require __DIR__ . '/_historial_proyecto.php'; ?>
+    </div>
+
+    <div
+        class="tab-pane fade"
+        id="materiales"
+        role="tabpanel"
+        aria-labelledby="pestanaMateriales"
+    >
+        <?php require __DIR__ . '/_materiales_proyecto.php'; ?>
+    </div>
+
+    <div
+        class="tab-pane fade"
+        id="pagos"
+        role="tabpanel"
+        aria-labelledby="pestanaPagos"
+    >
+        <!-- Solo consulta: los pagos los registra el Contador (SRS 5.4) -->
+        <?php $mostrarRegistro = true; ?>
+        <?php require __DIR__ . '/../layouts/_lista_pagos.php'; ?>
+        <a
+            class="enlace-publico d-inline-block mt-3"
+            href="<?= e(View::url('/pagos/proyecto/' . $idProyecto)) ?>"
+        >Ver en Finanzas</a>
     </div>
 </div>

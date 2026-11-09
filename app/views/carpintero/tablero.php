@@ -21,18 +21,49 @@ View::$titulo = 'Tablero del taller';
 
 <!-- ===== Indicadores ===== -->
 <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-md-4">
         <section class="indicador">
             <p class="indicador__titulo">Proyectos activos</p>
             <p class="indicador__valor"><?= e($totalActivos) ?></p>
         </section>
     </div>
 
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-md-4">
         <section class="indicador">
             <p class="indicador__titulo">Entregas esta semana</p>
             <p class="indicador__valor"><?= e($entregasSemana) ?></p>
         </section>
+    </div>
+
+    <!-- Material bajo (mockup 3): el más crítico y cuántos más hay -->
+    <div class="col-12 col-md-4">
+        <?php if ($materialesBajos === []): ?>
+            <section class="indicador">
+                <p class="indicador__titulo">Material bajo</p>
+                <p class="indicador__valor indicador__valor--texto">Sin material bajo</p>
+            </section>
+        <?php else: ?>
+            <?php
+            $masCritico = $materialesBajos[0];
+            $otrosBajos = count($materialesBajos) - 1;
+            $cantidadCritica = Material::cantidadConUnidad(
+                $masCritico['existencia'],
+                $masCritico['unidad']
+            );
+            ?>
+            <a
+                class="indicador indicador--enlace indicador--advertencia"
+                href="<?= e(View::url('/inventario/' . $masCritico['id_material'])) ?>"
+            >
+                <p class="indicador__titulo indicador__titulo--advertencia">Material bajo</p>
+                <p class="indicador__valor indicador__valor--texto">
+                    <?= e($masCritico['nombre']) ?> · <?= e($cantidadCritica) ?>
+                </p>
+                <?php if ($otrosBajos > 0): ?>
+                    <p class="texto-ayuda mb-0">y <?= e($otrosBajos) ?> más</p>
+                <?php endif; ?>
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 

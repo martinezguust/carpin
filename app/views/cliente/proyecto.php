@@ -80,6 +80,11 @@ $titulo = 'Mi ' . mb_strtolower(mb_substr($proyecto['tipo_mueble'], 0, 1))
                 <dt class="resumen-pago__total">Saldo pendiente</dt>
                 <dd class="resumen-pago__total"><strong><?= e(dinero($saldo)) ?></strong></dd>
             </dl>
+
+            <!-- Pagos realizados (RF-31, respuesta 17 de la Fase 3) -->
+            <h3 class="subtitulo-seccion mt-4">Pagos realizados</h3>
+            <?php $mostrarRegistro = false; ?>
+            <?php require __DIR__ . '/../layouts/_lista_pagos.php'; ?>
         </section>
 
     </div>

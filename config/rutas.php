@@ -99,6 +99,34 @@ $router->get('/porcentajes', 'NominaController@porcentajes');
 $router->post('/porcentajes/roles', 'NominaController@guardarPorcentajesRol');
 $router->post('/porcentajes/presupuestos', 'NominaController@guardarPorcentajesPresupuesto');
 
+/* ===== Inventario (HU-07, HU-16) ===== */
+$router->get('/inventario', 'InventarioController@index');
+$router->get('/inventario/nuevo', 'InventarioController@nuevo');
+$router->get('/inventario/faltantes', 'InventarioController@faltantes');
+$router->post('/inventario', 'InventarioController@guardar');
+$router->get('/inventario/{id}', 'InventarioController@detalle');
+$router->get('/inventario/{id}/editar', 'InventarioController@editar');
+$router->post('/inventario/{id}', 'InventarioController@actualizar');
+$router->post('/inventario/{id}/estado', 'InventarioController@cambiarEstado');
+$router->post('/inventario/{id}/movimientos', 'InventarioController@registrarMovimiento');
+
+/* ===== Reportes de daño (HU-03) ===== */
+$router->get('/danios', 'DanioController@index');
+$router->get('/danios/reportar', 'DanioController@reportar');
+$router->post('/danios', 'DanioController@guardar');
+$router->post('/danios/{id}/estado', 'DanioController@avanzarEstado');
+
+/* ===== Asistencia y reporte de horas (HU-04) ===== */
+$router->get('/asistencia', 'AsistenciaController@index');
+$router->post('/asistencia', 'AsistenciaController@guardar');
+$router->post('/asistencia/{id}/eliminar', 'AsistenciaController@eliminar');
+$router->get('/reportes/horas', 'AsistenciaController@reporteHoras');
+
+/* ===== Pagos de clientes y finanzas (HU-27, HU-15) ===== */
+$router->get('/pagos', 'PagoController@index');
+$router->get('/pagos/{tipo}/{id}', 'PagoController@detalle');
+$router->post('/pagos/{tipo}/{id}', 'PagoController@registrar');
+
 /* ===== Cliente: portal (HU-23, HU-26) ===== */
 $router->get('/mis-pedidos', 'ClientePortalController@index');
 $router->get('/mis-pedidos/proyecto/{id}', 'ClientePortalController@proyecto');

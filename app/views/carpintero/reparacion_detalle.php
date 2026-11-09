@@ -127,6 +127,11 @@ $entregaConSaldo = $siguienteEstado === 'ENTREGADA' && $saldo > 0;
                 <dt>Status de pago</dt>
                 <dd class="mb-0"><?= e(etiquetaStatusPago($reparacion['status_pago'])) ?></dd>
             </dl>
+
+            <!-- Pagos: solo consulta, los registra el Contador (SRS 5.4) -->
+            <h3 class="subtitulo-seccion mt-4">Pagos registrados</h3>
+            <?php $mostrarRegistro = true; ?>
+            <?php require __DIR__ . '/../layouts/_lista_pagos.php'; ?>
         </section>
     </div>
 

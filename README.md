@@ -9,7 +9,7 @@ Sistema web para gestionar una carpintería familiar (muebles a pedido y reparac
 | Fase 0 – Setup | Estructura, Composer + Dompdf, configuración, core, base de datos y datos de prueba | ✅ Terminada y aprobada |
 | Fase 1 – Sprint 1 | Acceso por roles, usuarios, proyectos, actividades, fases, portal del cliente y notificaciones | ✅ Terminada y aprobada |
 | Fase 2 – Sprint 2 | Producción, página pública, cotizaciones, reparaciones y formas de pago | ✅ Terminada y aprobada |
-| Fase 3 – Sprint 3 | Inventario, reportes de daño, asistencia, pagos de clientes y saldos vencidos | Pendiente |
+| Fase 3 – Sprint 3 | Inventario, reportes de daño, asistencia, pagos de clientes y saldos vencidos | Terminada (pendiente de revisión del equipo) |
 | Fase 4 – Sprint 4 | Nómina, proveedores, presupuestos, costos y PDF | Pendiente |
 
 ## Tecnologías

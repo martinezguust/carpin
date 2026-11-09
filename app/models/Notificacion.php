@@ -32,6 +32,23 @@ class Notificacion extends Model {
     }
 
     /**
+     * Indica si el usuario tiene sin leer una notificación cuya clave única
+     * empieza con un prefijo (ej. "INV-12-" para un material, CU-14 A1).
+     *
+     * Recibe: $idUsuario; $prefijo, inicio de la clave única.
+     * Devuelve: true si hay alguna sin leer.
+     */
+    public function tieneSinLeerConClave(int $idUsuario, string $prefijo): bool {
+        $consulta = $this->db->prepare(
+            'SELECT COUNT(*) FROM notificacion '
+            . 'WHERE id_usuario = ? AND leida = 0 AND clave_unica LIKE ?'
+        );
+        $consulta->execute([$idUsuario, $prefijo . '%']);
+
+        return (int) $consulta->fetchColumn() > 0;
+    }
+
+    /**
      * Cuenta las notificaciones sin leer de un usuario.
      *
      * Recibe: $idUsuario.

@@ -59,6 +59,7 @@ class ClientePortalController extends Controller {
             'fases'        => (new Fase())->todas(),
             'saldo'        => PagoService::saldo($proyecto['precio'], $proyecto['pagado']),
             'mensajeListo' => FaseService::mensajeListoCliente($proyecto['tipo_mueble']),
+            'pagos'        => (new PagoCliente())->listarDe('PRY', (int) $proyecto['id_proyecto']),
         ], 'panel');
     }
 
@@ -92,6 +93,7 @@ class ClientePortalController extends Controller {
             'imagenes'     => (new ImagenReparacion())->listarPorReparacion($idReparacion),
             'saldo'        => PagoService::saldo($reparacion['costo'], $reparacion['pagado']),
             'mensajeListo' => FaseService::mensajeListoCliente($reparacion['descripcion_mueble']),
+            'pagos'        => (new PagoCliente())->listarDe('REP', $idReparacion),
         ], 'panel');
     }
 
