@@ -159,6 +159,7 @@ class ReparacionController extends Controller {
             'estados'         => Reparacion::ESTADOS,
             'tamanos'         => Reparacion::TAMANOS,
             'lugaresLibres'   => ImagenReparacion::MAXIMO - count($imagenes),
+            'pagos'           => (new PagoCliente())->listarDe('REP', $idReparacion),
         ], 'panel');
     }
 

@@ -66,3 +66,11 @@ $cantidad = count($tarjetas);
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
+<!-- Reportar daño (HU-03, RF-40, mockup 6) -->
+<div class="acciones-pie">
+    <a class="btn btn-carpin-secundario" href="<?= e(View::url('/danios/reportar')) ?>">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        Reportar material o herramienta dañada
+    </a>
+</div>

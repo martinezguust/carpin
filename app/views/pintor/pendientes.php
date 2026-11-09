@@ -201,3 +201,15 @@ $ahora = date('Y-m-d\TH:i');
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
+<!-- Inventario de pinturas (HU-07, RF-37, RF-38) y reporte de daño (RF-40, mockup 7) -->
+<div class="acciones-pie">
+    <a class="btn btn-carpin-secundario" href="<?= e(View::url('/inventario')) ?>">
+        <i class="bi bi-droplet" aria-hidden="true"></i>
+        Inventario de pinturas
+    </a>
+    <a class="btn btn-carpin-secundario" href="<?= e(View::url('/danios/reportar')) ?>">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        Reportar daño
+    </a>
+</div>

@@ -57,6 +57,7 @@ class ProyectoController extends Controller {
             'columnas'         => $columnas,
             'totalActivos'     => $proyectos->contarActivos(),
             'entregasSemana'   => $proyectos->contarEntregasEntre($lunes, $domingo),
+            'materialesBajos'  => (new Material())->listarBajos(),
         ], 'panel');
     }
 
@@ -289,6 +290,8 @@ class ProyectoController extends Controller {
             $trabajadoresPorTipo[$tipo] = $trabajadores->activosPorRol($rol);
         }
 
+        $salidas = (new MovimientoInventario())->listarSalidasDeProyecto($idProyecto);
+
         $this->vista('carpintero/proyecto_detalle', [
             'proyecto'            => $proyecto,
             'saldo'               => PagoService::saldo($proyecto['precio'], $proyecto['pagado']),
@@ -300,6 +303,8 @@ class ProyectoController extends Controller {
             'rolPorTipo'          => Actividad::ROL_POR_TIPO,
             'capas'               => (new CapaPintura())->listarPorProyecto($idProyecto),
             'secados'             => (new Secado())->listarPorProyecto($idProyecto),
+            'salidas'             => $salidas,
+            'pagos'               => (new PagoCliente())->listarDe('PRY', $idProyecto),
         ], 'panel');
     }
 

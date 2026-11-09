@@ -144,6 +144,54 @@ class Reparacion extends Model {
     }
 
     /**
+     * Lista las reparaciones que todavía no se entregan con el nombre del
+     * cliente (destino de salidas de material).
+     *
+     * Recibe: nada.
+     * Devuelve: lista con id_reparacion, folio, descripcion_mueble y cliente_nombre.
+     */
+    public function listarAbiertas(): array {
+        return $this->db->query(
+            'SELECT r.id_reparacion, r.folio, r.descripcion_mueble, '
+            . 'c.nombre_completo AS cliente_nombre '
+            . 'FROM reparacion r JOIN cliente c ON c.id_cliente = r.id_cliente '
+            . "WHERE r.activo = 1 AND r.estado <> 'ENTREGADA' "
+            . 'ORDER BY r.folio'
+        )->fetchAll();
+    }
+
+    /**
+     * Bloquea la fila de la reparación dentro de una transacción para
+     * registrar un pago sin que otro pago se cruce.
+     *
+     * Recibe: $idReparacion.
+     * Devuelve: costo y total pagado, o null si no existe.
+     */
+    public function bloquearParaPago(int $idReparacion): ?array {
+        $consulta = $this->db->prepare(
+            'SELECT costo AS importe, (SELECT COALESCE(SUM(monto), 0) FROM pago_cliente '
+            . 'WHERE id_reparacion = ?) AS pagado '
+            . 'FROM reparacion WHERE id_reparacion = ? AND activo = 1 FOR UPDATE'
+        );
+        $consulta->execute([$idReparacion, $idReparacion]);
+
+        return $consulta->fetch() ?: null;
+    }
+
+    /**
+     * Guarda el status de pago (RN-15).
+     *
+     * Recibe: $idReparacion; $status, PENDIENTE/CON_ANTICIPO/PAGADO.
+     * Devuelve: nada.
+     */
+    public function actualizarStatusPago(int $idReparacion, string $status): void {
+        $consulta = $this->db->prepare(
+            'UPDATE reparacion SET status_pago = ? WHERE id_reparacion = ?'
+        );
+        $consulta->execute([$status, $idReparacion]);
+    }
+
+    /**
      * Cambia el estado, el avance y la fecha de entrega real.
      *
      * Recibe: $idReparacion; $estado, llave de ESTADOS;

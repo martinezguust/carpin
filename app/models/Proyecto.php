@@ -212,6 +212,65 @@ class Proyecto extends Model {
     }
 
     /**
+     * Lista los proyectos que todavía no se entregan con el nombre del
+     * cliente (destino de salidas de material).
+     *
+     * Recibe: $idTrabajadorPintor, si se indica, solo los proyectos donde
+     *         ese pintor tiene actividad de Pintura (respuesta 5); o null.
+     * Devuelve: lista con id_proyecto, folio, tipo_mueble y cliente_nombre.
+     */
+    public function listarAbiertos(?int $idTrabajadorPintor = null): array {
+        $sql = 'SELECT p.id_proyecto, p.folio, p.tipo_mueble, c.nombre_completo AS cliente_nombre '
+            . 'FROM proyecto p JOIN cliente c ON c.id_cliente = p.id_cliente '
+            . 'WHERE p.activo = 1 AND p.id_fase <> ?';
+        $valores = [Fase::ENTREGADO];
+
+        if ($idTrabajadorPintor !== null) {
+            $sql .= ' AND EXISTS (SELECT 1 FROM actividad a WHERE a.id_proyecto = p.id_proyecto '
+                . "AND a.id_trabajador = ? AND a.tipo = 'PINTURA')";
+            $valores[] = $idTrabajadorPintor;
+        }
+
+        $sql .= ' ORDER BY p.folio';
+
+        $consulta = $this->db->prepare($sql);
+        $consulta->execute($valores);
+
+        return $consulta->fetchAll();
+    }
+
+    /**
+     * Bloquea la fila del proyecto dentro de una transacción para registrar
+     * un pago sin que otro pago se cruce.
+     *
+     * Recibe: $idProyecto.
+     * Devuelve: precio y total pagado, o null si no existe.
+     */
+    public function bloquearParaPago(int $idProyecto): ?array {
+        $consulta = $this->db->prepare(
+            'SELECT precio AS importe, (SELECT COALESCE(SUM(monto), 0) FROM pago_cliente '
+            . 'WHERE id_proyecto = ?) AS pagado '
+            . 'FROM proyecto WHERE id_proyecto = ? AND activo = 1 FOR UPDATE'
+        );
+        $consulta->execute([$idProyecto, $idProyecto]);
+
+        return $consulta->fetch() ?: null;
+    }
+
+    /**
+     * Guarda el status de pago (RN-15).
+     *
+     * Recibe: $idProyecto; $status, PENDIENTE/CON_ANTICIPO/PAGADO.
+     * Devuelve: nada.
+     */
+    public function actualizarStatusPago(int $idProyecto, string $status): void {
+        $consulta = $this->db->prepare(
+            'UPDATE proyecto SET status_pago = ? WHERE id_proyecto = ?'
+        );
+        $consulta->execute([$status, $idProyecto]);
+    }
+
+    /**
      * Cambia la fase, el avance y la fecha de entrega real de un proyecto.
      *
      * Recibe: $idProyecto; $idFase, nueva fase; $porcentaje, nuevo avance;

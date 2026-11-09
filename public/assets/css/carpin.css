@@ -1856,3 +1856,125 @@ h6 {
     object-fit: cover;
     border-radius: 8px;
 }
+
+
+/* ===== Fase 3: alertas de inventario y saldos ===== */
+
+/* Fila marcada en rojo: existencia baja, saldo vencido o error (RF-39) */
+.tabla-carpin tr.fila-alerta td {
+    --bs-table-bg: rgba(178, 58, 46, 0.08);
+    color: var(--carpin-texto);
+}
+
+.tabla-carpin tr.fila-alerta td:first-child {
+    box-shadow: inset 4px 0 0 var(--carpin-error);
+}
+
+/* Renglón de totales al pie de una tabla */
+.tabla-carpin tr.fila-total td,
+.tabla-carpin tr.fila-total th {
+    font-weight: 700;
+    background-color: var(--carpin-crema);
+}
+
+/* Indicador que se puede tocar para ir a su lista */
+.indicador--enlace {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.indicador--enlace:hover,
+.indicador--enlace:focus-visible {
+    color: inherit;
+    border-color: var(--carpin-madera);
+}
+
+/* Indicador en rojo (saldo vencido, material bajo) */
+.indicador--alerta {
+    border-color: var(--carpin-error);
+    border-left-width: 4px;
+}
+
+.indicador--alerta .indicador__valor {
+    color: var(--carpin-error);
+}
+
+/* Indicador en ámbar (material bajo en el panel del Carpintero) */
+.indicador--advertencia {
+    border-color: var(--carpin-advertencia);
+    border-left-width: 4px;
+}
+
+.indicador__titulo--advertencia {
+    color: var(--carpin-nogal);
+}
+
+/* Valor de texto en lugar de número grande */
+.indicador__valor--texto {
+    font-family: var(--carpin-fuente-texto);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* Listas cortas del panel del Contador */
+.lista-corta {
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+}
+
+.lista-corta li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--carpin-borde);
+}
+
+.lista-corta li:last-child {
+    border-bottom: 0;
+}
+
+
+/* ===== Fase 3: reportes de daño y asistencia ===== */
+
+.foto-danio {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    max-height: 200px;
+    margin-bottom: 12px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Campos de hora de la tarjeta de asistencia */
+.campo-hora {
+    min-width: 110px;
+}
+
+/* Botones al pie de "Mis pendientes" (mockups 6 y 7) */
+.acciones-pie {
+    display: grid;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+@media (min-width: 576px) {
+    .acciones-pie {
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
+
+/* Importes en indicadores angostos (media columna en celular) */
+.indicador__valor--dinero {
+    font-size: 1.25rem;
+    overflow-wrap: anywhere;
+}
+
+@media (min-width: 1200px) {
+    .indicador__valor--dinero {
+        font-size: 1.5rem;
+    }
+}

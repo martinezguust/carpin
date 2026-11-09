@@ -41,14 +41,67 @@ final class NotificacionService {
      * Genera las alertas periódicas pendientes (SRS 5.2): se revisan al
      * iniciar sesión cualquier usuario y en cada consulta de la campana,
      * sin tareas programadas del servidor.
-     * Fase 2: secados cumplidos. Los saldos vencidos y los comprobantes
-     * de proveedores por vencer se agregan en las Fases 3 y 4.
+     * Fases 2 y 3: secados cumplidos y saldos vencidos. Los comprobantes
+     * de proveedores por vencer se agregan en la Fase 4.
      *
      * Recibe: nada.
      * Devuelve: nada.
      */
     public static function revisarAlertasPeriodicas(): void {
         self::avisarSecadosCumplidos();
+        self::avisarSaldosVencidos();
+    }
+
+    /**
+     * Avisa al Contador y al Carpintero de cada proyecto o reparación con
+     * saldo vencido (RF-51, RN-16), una vez al día por pedido (clave única
+     * con la fecha). Incluye los ya entregados que todavía deben
+     * (respuesta 18 de la Fase 3).
+     *
+     * Recibe: nada.
+     * Devuelve: nada.
+     */
+    private static function avisarSaldosVencidos(): void {
+        $vencidos = (new PagoCliente())->listarCuentas(['situacion' => 'VENCIDOS']);
+
+        if ($vencidos === []) {
+            return;
+        }
+
+        $modelo = new Notificacion();
+        $contadores = self::usuariosDeRol(Auth::CONTADOR);
+        $carpinteros = self::usuariosDeRol(Auth::CARPINTERO);
+        $hoy = date('Y-m-d');
+
+        foreach ($vencidos as $cuenta) {
+            $mensaje = 'Saldo vencido: ' . $cuenta['folio']
+                . ' (' . $cuenta['cliente_nombre'] . ')'
+                . ' debe ' . dinero($cuenta['saldo'])
+                . ' desde ' . fecha($cuenta['fecha_limite_pago']);
+            $clave = 'SALDO-' . $cuenta['tipo'] . '-' . $cuenta['id'] . '-' . $hoy;
+            $rutaTipo = ($cuenta['tipo'] === 'REP') ? 'reparacion' : 'proyecto';
+            $rutaCarpintero = ($cuenta['tipo'] === 'REP') ? '/reparaciones/' : '/proyectos/';
+
+            foreach ($contadores as $idUsuario) {
+                $modelo->crear(
+                    $idUsuario,
+                    'SALDO_VENCIDO',
+                    $mensaje,
+                    '/pagos/' . $rutaTipo . '/' . $cuenta['id'],
+                    $clave
+                );
+            }
+
+            foreach ($carpinteros as $idUsuario) {
+                $modelo->crear(
+                    $idUsuario,
+                    'SALDO_VENCIDO',
+                    $mensaje,
+                    $rutaCarpintero . $cuenta['id'],
+                    $clave
+                );
+            }
+        }
     }
 
     /**
